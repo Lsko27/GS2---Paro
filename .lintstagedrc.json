@@ -1,0 +1,7 @@
+{
+  "*.{js,jsx,ts,tsx,mjs,cjs}": [
+    "eslint --fix",
+    "node ./node_modules/prettier/bin/prettier.cjs --write"
+  ],
+  "*.{json,jsonc,css,scss,md,mdx,yaml,yml,html}": "node ./node_modules/prettier/bin/prettier.cjs --write"
+}
