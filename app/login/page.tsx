@@ -118,12 +118,12 @@ const LoginPage = () => {
                   >
                     Entrar
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="text-primary text-lg font-semibold p-6 rounded-full border-2 border-primary"
+                  <Link
+                    href="/login"
+                    className="mt-3 flex h-11 w-full items-center justify-center rounded-full border-2 border-primary text-lg font-semibold text-primary"
                   >
-                    <Link href="/register">Criar conta</Link>
-                  </Button>
+                    Criar conta
+                  </Link>
                 </div>
               </form>
             </div>
