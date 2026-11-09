@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import HomeExplorer from "./_components/home-explorer";
 import Navbar from "../_components/navbar";
+import FooterParo from "../_components/footer";
 
 const HomePage = () => {
   return (
@@ -24,6 +25,7 @@ const HomePage = () => {
 
         <HomeExplorer />
       </main>
+      <FooterParo />
     </div>
   );
 };
