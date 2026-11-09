@@ -1,6 +1,5 @@
 import {
   ChartNoAxesColumnIncreasing,
-  CirclePlus,
   House,
   MapPin,
   UserRound,
@@ -10,7 +9,6 @@ import Link from "next/link";
 const atalhos = [
   { rotulo: "Início", href: "/home", Icone: House },
   { rotulo: "Explorar", href: "/explore", Icone: MapPin },
-  { rotulo: "Cadastrar", href: "", Icone: CirclePlus },
   { rotulo: "Impacto", href: "", Icone: ChartNoAxesColumnIncreasing },
   { rotulo: "Perfil", href: "/profile", Icone: UserRound },
 ] as const;
@@ -23,7 +21,7 @@ export default function Footer() {
     <footer className="sticky bottom-0 z-20 w-full border-t border-neutral-300 bg-white">
       <nav
         aria-label="Navegação principal"
-        className="grid grid-cols-5 px-2 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
+        className="grid grid-cols-4 px-2 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
       >
         {atalhos.map(({ rotulo, href, Icone }) => {
           const conteudo = (
