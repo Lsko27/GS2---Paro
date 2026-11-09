@@ -16,9 +16,9 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/app/_components/ui/button";
 import { Input } from "@/app/_components/ui/input";
 
-import type { Coordenadas, PontoMapa, VisaoMapa } from "./mapa-apoio";
+import type { Coordenadas, PontoMapa, VisaoMapa } from "./support-map";
 
-const MapaApoio = dynamic(() => import("./mapa-apoio"), {
+const MapaApoio = dynamic(() => import("./support-map"), {
   ssr: false,
   loading: () => (
     <div
@@ -188,7 +188,7 @@ const HomeExplorer = () => {
             variant="outline"
             aria-pressed={filtro === valor}
             onClick={() => setFiltro(valor)}
-            className="h-8 min-w-0 gap-1.5 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
+            className="h-10 min-w-0 gap-1.5 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
           >
             <Icone className="size-4 shrink-0" aria-hidden="true" />
             {rotulo}

@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 
 const atalhos = [
-  { rotulo: "Início", href: "/", Icone: House },
+  { rotulo: "Início", href: "/home", Icone: House },
   { rotulo: "Explorar", href: "/explore", Icone: MapPin },
   { rotulo: "Cadastrar", href: "", Icone: CirclePlus },
   { rotulo: "Impacto", href: "", Icone: ChartNoAxesColumnIncreasing },
@@ -18,7 +18,7 @@ const atalhos = [
 const classeAtalho =
   "flex min-h-11 min-w-0 flex-col items-center justify-center gap-2 rounded-md px-1 text-center text-xs text-neutral-950 focus-visible:outline-2 focus-visible:outline-primary";
 
-export default function FooterParo() {
+export default function Footer() {
   return (
     <footer className="sticky bottom-0 z-20 w-full border-t border-neutral-300 bg-white">
       <nav

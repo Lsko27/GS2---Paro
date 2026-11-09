@@ -9,8 +9,9 @@ const Navbar = () => {
       <div className="flex justify-between items center w-full">
         {/* Esquerda */}
         <div>
-          <Image src="/logo.png" alt="Parô" width={29} height={36} />
-          <Link href="/" />
+          <Link href="/home">
+            <Image src="/logo.png" alt="Parô" width={29} height={36} />
+          </Link>
         </div>
         {/* Direita */}
         <div className="flex items-center gap-6 text-primary">

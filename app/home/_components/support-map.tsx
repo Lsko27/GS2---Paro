@@ -1,5 +1,7 @@
 "use client";
 
+// @refresh reset
+
 import "leaflet/dist/leaflet.css";
 
 import type { LatLngTuple } from "leaflet";
@@ -26,7 +28,7 @@ export type PontoMapa = {
   coordenadas: Coordenadas;
 };
 
-type MapaApoioProps = {
+type SupportMapProps = {
   visao: VisaoMapa;
   pontos: PontoMapa[];
   localizacao: Coordenadas | null;
@@ -42,7 +44,7 @@ function AtualizarVisao({ visao }: { visao: VisaoMapa }) {
   return null;
 }
 
-const MapaApoio = ({ visao, pontos, localizacao }: MapaApoioProps) => {
+const SupportMap = ({ visao, pontos, localizacao }: SupportMapProps) => {
   const chaveCarto = process.env.NEXT_PUBLIC_CARTO_BASEMAP_KEY?.trim();
 
   if (!chaveCarto) {
@@ -111,4 +113,4 @@ const MapaApoio = ({ visao, pontos, localizacao }: MapaApoioProps) => {
   );
 };
 
-export default MapaApoio;
+export default SupportMap;
