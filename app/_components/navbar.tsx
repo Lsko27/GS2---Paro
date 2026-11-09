@@ -13,7 +13,7 @@ const Navbar = () => {
           <Link href="/" />
         </div>
         {/* Direita */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 text-primary">
           <Button variant="ghost" className="text-2xl">
             <BellIcon className="size-6" />
           </Button>
