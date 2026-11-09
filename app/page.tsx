@@ -44,7 +44,7 @@ const SplashScreenPage = () => {
             </Link>
 
             <Link
-              href="/cadastro"
+              href="/register"
               className={cn(
                 buttonVariants({ variant: "outline" }),
                 "w-full rounded-full border-2 border-primary text-primary p-6 text-lg",

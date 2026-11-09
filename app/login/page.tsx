@@ -58,8 +58,8 @@ const LoginPage = () => {
       <section className="relative z-10 -mt-12 w-full flex-1 rounded-t-[40px] bg-white pb-8 pt-10">
         <div className="mx-auto w-full max-w-120 px-5">
           <div className="space-y-3">
-            <h1 className="text-5xl font-bold text-primary">Entrar</h1>
-            <p className="pb-6 text-lg">
+            <h1 className="text-3xl font-bold text-primary">Entrar</h1>
+            <p className="pb-6 text-md">
               Acesse sua conta para encontrar pontos de apoio perto de você.
             </p>
 
@@ -114,16 +114,15 @@ const LoginPage = () => {
                 <div className="flex flex-col mt-6 gap-4 w-full">
                   <Button
                     type="submit"
-                    className=" text-lg font-bold p-6 rounded-full bg-paro-orange"
+                    className=" text-lg font-semibold p-6 rounded-full bg-paro-orange"
                   >
                     Entrar
                   </Button>
                   <Button
-                    type="submit"
                     variant="outline"
-                    className="text-primary text-lg font-bold p-6 rounded-full border-2 border-primary"
+                    className="text-primary text-lg font-semibold p-6 rounded-full border-2 border-primary"
                   >
-                    Criar conta
+                    <Link href="/register">Criar conta</Link>
                   </Button>
                 </div>
               </form>
