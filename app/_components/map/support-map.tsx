@@ -14,40 +14,40 @@ import {
   useMap,
 } from "react-leaflet";
 
-export type Coordenadas = LatLngTuple;
+export type MapCoordinates = LatLngTuple;
 
-export type VisaoMapa = {
-  centro: Coordenadas;
+export type MapView = {
+  center: MapCoordinates;
   zoom: number;
 };
 
-export type PontoMapa = {
+export type MapPoint = {
   id: string;
-  nome: string;
-  endereco: string;
-  coordenadas: Coordenadas;
+  name: string;
+  address: string;
+  coordinates: MapCoordinates;
 };
 
 type SupportMapProps = {
-  visao: VisaoMapa;
-  pontos: PontoMapa[];
-  localizacao: Coordenadas | null;
+  view: MapView;
+  points: MapPoint[];
+  userLocation: MapCoordinates | null;
 };
 
-function AtualizarVisao({ visao }: { visao: VisaoMapa }) {
-  const mapa = useMap();
+function UpdateMapView({ view }: { view: MapView }) {
+  const map = useMap();
 
   useEffect(() => {
-    mapa.setView(visao.centro, visao.zoom);
-  }, [mapa, visao]);
+    map.setView(view.center, view.zoom);
+  }, [map, view.center, view.zoom]);
 
   return null;
 }
 
-const SupportMap = ({ visao, pontos, localizacao }: SupportMapProps) => {
-  const chaveCarto = process.env.NEXT_PUBLIC_CARTO_BASEMAP_KEY?.trim();
+const SupportMap = ({ view, points, userLocation }: SupportMapProps) => {
+  const cartoKey = process.env.NEXT_PUBLIC_CARTO_BASEMAP_KEY?.trim();
 
-  if (!chaveCarto) {
+  if (!cartoKey) {
     return (
       <p
         role="status"
@@ -57,28 +57,32 @@ const SupportMap = ({ visao, pontos, localizacao }: SupportMapProps) => {
       </p>
     );
   }
+
+  const tileUrl =
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
   return (
     <MapContainer
-      center={visao.centro}
-      zoom={visao.zoom}
+      center={view.center}
+      zoom={view.zoom}
       zoomControl={false}
       scrollWheelZoom={false}
       className="h-full w-full"
       style={{ backgroundColor: "#171717" }}
     >
       <TileLayer
-        url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(chaveCarto)}`}
+        url={`${tileUrl}?key=${encodeURIComponent(cartoKey)}`}
         subdomains="abcd"
         maxZoom={20}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
 
-      <AtualizarVisao visao={visao} />
+      <UpdateMapView view={view} />
 
-      {pontos.map((ponto) => (
+      {points.map((point) => (
         <CircleMarker
-          key={ponto.id}
-          center={ponto.coordenadas}
+          key={point.id}
+          center={point.coordinates}
           radius={7}
           pathOptions={{
             color: "#ffffff",
@@ -88,16 +92,16 @@ const SupportMap = ({ visao, pontos, localizacao }: SupportMapProps) => {
           }}
         >
           <Popup>
-            <strong>{ponto.nome}</strong>
+            <strong>{point.name}</strong>
             <br />
-            {ponto.endereco}
+            {point.address}
           </Popup>
         </CircleMarker>
       ))}
 
-      {localizacao && (
+      {userLocation && (
         <CircleMarker
-          center={localizacao}
+          center={userLocation}
           radius={7}
           pathOptions={{
             color: "#ffffff",
