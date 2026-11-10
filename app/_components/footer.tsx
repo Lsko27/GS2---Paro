@@ -18,7 +18,7 @@ const navigationItems = [
   { label: "Explorar", href: "/explore", Icon: MapPin },
   {
     label: "Impacto",
-    href: "",
+    href: "/impact",
     Icon: ChartNoAxesColumnIncreasing,
   },
   { label: "Perfil", href: "/profile", Icon: UserRound },
