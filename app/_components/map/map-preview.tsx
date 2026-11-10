@@ -43,6 +43,7 @@ const MapPreview = ({
         name: establishment.name,
         address: `${establishment.street}, ${establishment.number} - ${establishment.neighborhood}`,
         coordinates: [establishment.latitude, establishment.longitude],
+        distanceKm: establishment.distanceKm,
       })),
     [establishments],
   );

@@ -33,6 +33,7 @@ export type MapPoint = {
   name: string;
   address: string;
   coordinates: MapCoordinates;
+  distanceKm: number;
 };
 
 type SupportMapProps = {
@@ -222,9 +223,15 @@ export default function SupportMap({
           }}
         >
           <Popup>
-            <strong>{point.name}</strong>
-            <br />
-            {point.address}
+            <div className="min-w-40 space-y-2">
+              <h3 className="text-sm font-semibold">{point.name}</h3>
+
+              <p className="text-xs text-neutral-600">{point.address}</p>
+
+              <p className="text-xs font-medium text-teal-700">
+                {point.distanceKm.toFixed(2)} km de distância
+              </p>
+            </div>
           </Popup>
         </CircleMarker>
       ))}

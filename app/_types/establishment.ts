@@ -11,4 +11,5 @@ export type EstablishmentSearchResult = {
   latitude: number;
   longitude: number;
   distanceKm: number;
+  imageUrl: string | null;
 };

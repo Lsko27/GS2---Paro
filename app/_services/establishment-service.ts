@@ -21,6 +21,7 @@ type EstablishmentApiResponse = {
   latitude: number;
   longitude: number;
   distanciaKm: number;
+  imagemUrl: string | null;
 };
 
 export async function searchEstablishments({
@@ -56,5 +57,6 @@ export async function searchEstablishments({
     latitude: establishment.latitude,
     longitude: establishment.longitude,
     distanceKm: establishment.distanciaKm,
+    imageUrl: establishment.imagemUrl ?? null,
   }));
 }
