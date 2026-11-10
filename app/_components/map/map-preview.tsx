@@ -49,7 +49,14 @@ const MapPreview = ({
 
   return (
     <div className="h-125 w-full overflow-hidden rounded-xl">
-      <SupportMap view={view} points={points} userLocation={userLocation} />
+      <SupportMap
+        view={view}
+        points={points}
+        userLocation={userLocation}
+        searchCenter={center}
+        searchRadius={5}
+        focus={null}
+      />
     </div>
   );
 };

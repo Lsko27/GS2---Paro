@@ -5,7 +5,7 @@
 import "leaflet/dist/leaflet.css";
 
 import type { LatLngTuple } from "leaflet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   Circle,
   CircleMarker,
@@ -22,6 +22,12 @@ export type MapView = {
   zoom: number;
 };
 
+export type MapFocus = {
+  center: MapCoordinates;
+  zoom: number;
+  requestId: number;
+};
+
 export type MapPoint = {
   id: string;
   name: string;
@@ -35,19 +41,28 @@ type SupportMapProps = {
   userLocation: MapCoordinates | null;
   searchCenter: MapCoordinates;
   searchRadius: number;
+  focus: MapFocus | null;
 };
 
-function FitSearchRadius({
+function MapViewController({
   searchCenter,
   searchRadius,
+  focus,
 }: {
   searchCenter: MapCoordinates;
   searchRadius: number;
+  focus: MapFocus | null;
 }) {
   const map = useMap();
+  const lastAreaKey = useRef<string | null>(null);
+  const lastFocus = useRef<MapFocus | null>(null);
 
   const latitude = searchCenter[0];
   const longitude = searchCenter[1];
+  const focusLatitude = focus?.center[0];
+  const focusLongitude = focus?.center[1];
+  const focusZoom = focus?.zoom;
+  const focusRequestId = focus?.requestId;
 
   useEffect(() => {
     if (
@@ -59,33 +74,77 @@ function FitSearchRadius({
       return;
     }
 
-    const earthRadiusKm = 6371.0088;
-    const angularDistance = searchRadius / earthRadiusKm;
+    const areaKey = `${latitude}:${longitude}:${searchRadius}`;
+    if (lastAreaKey.current !== areaKey) {
+      lastAreaKey.current = areaKey;
+      lastFocus.current = null;
 
-    const latitudeRadians = (latitude * Math.PI) / 180;
-    const latitudeOffset = (angularDistance * 180) / Math.PI;
+      const earthRadiusKm = 6371.0088;
+      const angularDistance = searchRadius / earthRadiusKm;
+      const latitudeRadians = (latitude * Math.PI) / 180;
+      const latitudeOffset = (angularDistance * 180) / Math.PI;
+      const longitudeOffset =
+        (Math.asin(
+          Math.min(
+            1,
+            Math.sin(angularDistance) /
+              Math.max(Math.abs(Math.cos(latitudeRadians)), 1e-12),
+          ),
+        ) *
+          180) /
+        Math.PI;
 
-    const longitudeOffset =
-      (Math.asin(
-        Math.min(
-          1,
-          Math.sin(angularDistance) /
-            Math.max(Math.abs(Math.cos(latitudeRadians)), 1e-12),
-        ),
-      ) *
-        180) /
-      Math.PI;
+      map.fitBounds(
+        [
+          [
+            Math.max(-90, latitude - latitudeOffset),
+            longitude - longitudeOffset,
+          ],
+          [
+            Math.min(90, latitude + latitudeOffset),
+            longitude + longitudeOffset,
+          ],
+        ],
+        { padding: [20, 20], animate: false },
+      );
+      return;
+    }
 
-    const bounds: LatLngTuple[] = [
-      [Math.max(-90, latitude - latitudeOffset), longitude - longitudeOffset],
-      [Math.min(90, latitude + latitudeOffset), longitude + longitudeOffset],
-    ];
+    if (
+      focusLatitude === undefined ||
+      focusLongitude === undefined ||
+      focusZoom === undefined ||
+      focusRequestId === undefined
+    ) {
+      lastFocus.current = null;
+      return;
+    }
 
-    map.fitBounds(bounds, {
-      padding: [20, 20],
-      animate: false,
-    });
-  }, [map, latitude, longitude, searchRadius]);
+    if (
+      lastFocus.current?.requestId !== focusRequestId ||
+      lastFocus.current?.center[0] !== focusLatitude ||
+      lastFocus.current?.center[1] !== focusLongitude ||
+      lastFocus.current?.zoom !== focusZoom
+    ) {
+      lastFocus.current = {
+        center: [focusLatitude, focusLongitude],
+        zoom: focusZoom,
+        requestId: focusRequestId,
+      };
+      map.setView([focusLatitude, focusLongitude], focusZoom, {
+        animate: true,
+      });
+    }
+  }, [
+    map,
+    latitude,
+    longitude,
+    searchRadius,
+    focusLatitude,
+    focusLongitude,
+    focusZoom,
+    focusRequestId,
+  ]);
 
   return null;
 }
@@ -96,6 +155,7 @@ export default function SupportMap({
   userLocation,
   searchCenter,
   searchRadius,
+  focus,
 }: SupportMapProps) {
   const cartoKey = process.env.NEXT_PUBLIC_CARTO_BASEMAP_KEY?.trim();
 
@@ -129,9 +189,10 @@ export default function SupportMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
 
-      <FitSearchRadius
+      <MapViewController
         searchCenter={searchCenter}
         searchRadius={searchRadius}
+        focus={focus}
       />
 
       <Circle
