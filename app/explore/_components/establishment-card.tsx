@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { Badge } from "@/app/_components/ui/badge";
 
 import { Button } from "@/app/_components/ui/button";
 import {
@@ -23,10 +24,12 @@ import {
 
 import type { EstablishmentSearchResult } from "@/app/_types/establishment";
 import type { EstablishmentResource } from "@/app/_types/establishment-resources";
+import OpeningStatusBadge from "@/app/_components/opening-status-badge";
 
 type EstablishmentCardProps = {
   establishment: EstablishmentSearchResult;
   imageUrl?: string | null;
+  isOpen: boolean | null;
 };
 
 function normalizeText(text: string) {
@@ -54,10 +57,11 @@ function getResourceIcon(name: string) {
   }
 }
 
-export default function EstablishmentCard({
+const EstablishmentCard = ({
   establishment,
   imageUrl,
-}: EstablishmentCardProps) {
+  isOpen,
+}: EstablishmentCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
@@ -178,6 +182,10 @@ export default function EstablishmentCard({
             {establishment.distanceKm.toFixed(2)} km de distância
           </p>
 
+          <div className="mt-1">
+            <OpeningStatusBadge isOpen={isOpen} />
+          </div>
+
           {isLoadingResources ? (
             <p className="text-xs text-neutral-500">Carregando recursos...</p>
           ) : resourcesError ? (
@@ -213,4 +221,6 @@ export default function EstablishmentCard({
       </CardContent>
     </Card>
   );
-}
+};
+
+export default EstablishmentCard;

@@ -108,7 +108,7 @@ function toMapPoint(establishment: EstablishmentSearchResult): MapPoint {
   };
 }
 
-export default function HomeExplorer() {
+const HomeExplorer = () => {
   const [searchRadius, setSearchRadius] = useState<number>(5);
   const [mapFocus, setMapFocus] = useState<MapFocus | null>(null);
   const [search, setSearch] = useState("");
@@ -429,4 +429,6 @@ export default function HomeExplorer() {
       )}
     </>
   );
-}
+};
+
+export default HomeExplorer;

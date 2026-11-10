@@ -4,6 +4,7 @@ import Footer from "../_components/footer";
 import Navbar from "../_components/navbar";
 import { searchEstablishments } from "../_services/establishment-service";
 import EstablishmentCard from "./_components/establishment-card";
+import { Badge } from "@/app/_components/ui/badge";
 import Link from "next/link";
 
 const ExplorePage = async () => {

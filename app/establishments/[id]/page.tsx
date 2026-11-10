@@ -1,31 +1,14 @@
 import { api } from "@/app/_lib/api";
+import type {
+  EstablishmentDetailsData,
+  EstablishmentResourceData,
+  EstablishmentReview,
+  OpeningHour,
+  ReviewSummary,
+} from "@/app/_types/establishment-details";
 import EstablishmentDetails from "../_components/establishment-details";
 import { Suspense } from "react";
-
-export type EstablishmentDetailsData = {
-  id: number;
-  name: string;
-  description: string | null;
-  zipCode: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  latitude: number;
-  longitude: number;
-  imageUrl: string | null;
-};
-
-export type EstablishmentResourceData = {
-  id: number;
-  resourceId: number;
-  name: string;
-  description: string | null;
-  available: boolean;
-  free: boolean;
-  condition: string | null;
-};
+import { notFound } from "next/navigation";
 
 type EstablishmentApiResponse = {
   id: number;
@@ -42,7 +25,7 @@ type EstablishmentApiResponse = {
   imagemUrl: string | null;
 };
 
-type EstablishmentResourceApiResponse = {
+type ResourceApiResponse = {
   id: number;
   estabelecimentoId: number;
   recursoId: number;
@@ -53,23 +36,59 @@ type EstablishmentResourceApiResponse = {
   condicao: string | null;
 };
 
+type OpeningHourApiResponse = {
+  id: number;
+  estabelecimentoId: number;
+  diaSemana: number;
+  horaAbertura: string | null;
+  horaFechamento: string | null;
+  fechado: boolean;
+};
+
+type ReviewApiResponse = {
+  id: number;
+  estabelecimentoId: number;
+  usuarioId: number;
+  nomeUsuario: string;
+  nota: number;
+  comentario: string | null;
+  criadoEm: string;
+  atualizadoEm: string | null;
+};
+
+type ReviewSummaryApiResponse = {
+  estabelecimentoId: number;
+  media: number | null;
+  totalAvaliacoes: number;
+};
+
 type EstablishmentPageProps = {
   params: Promise<{ id: string }>;
 };
 
 async function EstablishmentContent({ params }: EstablishmentPageProps) {
   const { id } = await params;
-
   const establishmentId = Number(id);
 
   if (!Number.isSafeInteger(establishmentId) || establishmentId <= 0) {
-    return <p className="p-6">Estabelecimento inválido.</p>;
+    notFound();
   }
 
-  const [establishmentResponse, resourcesResponse] = await Promise.all([
+  const [
+    establishmentResponse,
+    resourcesResponse,
+    openingHoursResponse,
+    reviewsResponse,
+    summaryResponse,
+  ] = await Promise.all([
     api<EstablishmentApiResponse>(`/estabelecimentos/${establishmentId}`),
-    api<EstablishmentResourceApiResponse[]>(
-      `/estabelecimentos/${establishmentId}/recursos`,
+    api<ResourceApiResponse[]>(`/estabelecimentos/${establishmentId}/recursos`),
+    api<OpeningHourApiResponse[]>(
+      `/estabelecimentos/${establishmentId}/horarios`,
+    ),
+    api<ReviewApiResponse[]>(`/estabelecimentos/${establishmentId}/avaliacoes`),
+    api<ReviewSummaryApiResponse>(
+      `/estabelecimentos/${establishmentId}/avaliacoes/resumo`,
     ),
   ]);
 
@@ -100,18 +119,51 @@ async function EstablishmentContent({ params }: EstablishmentPageProps) {
     }),
   );
 
+  const openingHours: OpeningHour[] = openingHoursResponse.map((hour) => ({
+    id: hour.id,
+    establishmentId: hour.estabelecimentoId,
+    dayOfWeek: hour.diaSemana,
+    openingTime: hour.horaAbertura,
+    closingTime: hour.horaFechamento,
+    closed: hour.fechado,
+  }));
+
+  const reviews: EstablishmentReview[] = reviewsResponse.map((review) => ({
+    id: review.id,
+    establishmentId: review.estabelecimentoId,
+    userId: review.usuarioId,
+    userName: review.nomeUsuario,
+    rating: review.nota,
+    comment: review.comentario,
+    createdAt: review.criadoEm,
+    updatedAt: review.atualizadoEm,
+  }));
+
+  const reviewSummary: ReviewSummary = {
+    establishmentId: summaryResponse.estabelecimentoId,
+    average: summaryResponse.media,
+    totalReviews: summaryResponse.totalAvaliacoes,
+  };
+
   return (
-    <EstablishmentDetails establishment={establishment} resources={resources} />
+    <EstablishmentDetails
+      establishment={establishment}
+      resources={resources}
+      openingHours={openingHours}
+      reviews={reviews}
+      reviewSummary={reviewSummary}
+      currentTime={new Date().toISOString()}
+    />
   );
 }
 
-export default function EstablishmentPage({ params }: EstablishmentPageProps) {
+const EstablishmentPage = ({ params }: EstablishmentPageProps) => {
   return (
     <Suspense fallback={<EstablishmentLoading />}>
       <EstablishmentContent params={params} />
     </Suspense>
   );
-}
+};
 
 function EstablishmentLoading() {
   return (
@@ -120,15 +172,13 @@ function EstablishmentLoading() {
 
       <div className="relative -mt-6 rounded-t-[36px] bg-white px-5 pt-8">
         <div className="h-7 w-3/4 rounded-lg bg-neutral-200" />
-
         <div className="mt-6 h-5 w-1/2 rounded-lg bg-neutral-200" />
-
         <div className="mt-8 h-24 rounded-2xl bg-neutral-100" />
-
-        <div className="mt-8 h-16 rounded-xl bg-neutral-100" />
-
-        <div className="mt-6 h-20 rounded-xl bg-neutral-100" />
+        <div className="mt-8 h-32 rounded-xl bg-neutral-100" />
+        <div className="mt-6 h-24 rounded-xl bg-neutral-100" />
       </div>
     </div>
   );
 }
+
+export default EstablishmentPage;
