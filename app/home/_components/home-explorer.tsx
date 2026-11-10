@@ -36,7 +36,8 @@ const SupportMap = dynamic(() => import("@/app/_components/map/support-map"), {
 });
 
 const INITIAL_CENTER: MapCoordinates = [-23.5631, -46.6544];
-const SEARCH_RADIUS_KM = 5;
+
+const radiusOptions = [1, 3, 5, 10, 20] as const;
 
 const filters = [
   {
@@ -102,7 +103,8 @@ function toMapPoint(establishment: EstablishmentSearchResult): MapPoint {
   };
 }
 
-export default function HomeExplorer() {
+const HomeExplorer = () => {
+  const [searchRadius, setSearchRadius] = useState<number>(5);
   const [search, setSearch] = useState("");
   const [submittedSearch, setSubmittedSearch] = useState("");
 
@@ -194,7 +196,7 @@ export default function HomeExplorer() {
       const params = new URLSearchParams({
         latitude: searchCenter[0].toString(),
         longitude: searchCenter[1].toString(),
-        radiusKm: SEARCH_RADIUS_KM.toString(),
+        radiusKm: searchRadius.toString(),
       });
 
       if (resourceId !== undefined) {
@@ -235,7 +237,13 @@ export default function HomeExplorer() {
     void loadEstablishments();
 
     return () => controller.abort();
-  }, [resources, resourceId, searchCenter, isResourceUnavailable]);
+  }, [
+    resources,
+    resourceId,
+    searchCenter,
+    searchRadius,
+    isResourceUnavailable,
+  ]);
 
   // Text search applies to the establishments returned by the API.
   const visibleEstablishments = useMemo(() => {
@@ -415,10 +423,40 @@ export default function HomeExplorer() {
         ))}
       </div>
 
+      {/* Radius filter */}
+      <div className="mt-4 space-y-2 px-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">Raio de busca</p>
+
+          <span className="text-xs text-muted-foreground">
+            {searchRadius} km
+          </span>
+        </div>
+
+        <div
+          role="group"
+          aria-label="Selecionar raio de busca"
+          className="grid grid-cols-5 gap-2"
+        >
+          {radiusOptions.map((radius) => (
+            <Button
+              key={radius}
+              type="button"
+              variant="outline"
+              aria-pressed={searchRadius === radius}
+              onClick={() => setSearchRadius(radius)}
+              className="h-9 min-w-0 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
+            >
+              {radius} km
+            </Button>
+          ))}
+        </div>
+      </div>
+
       <section
         id="mapa"
         aria-label="Mapa de pontos de apoio"
-        className="relative isolate mt-4 h-93 scroll-mt-4 overflow-hidden rounded-[18px] border border-neutral-500 bg-neutral-950"
+        className="relative isolate mt-4 h-82 scroll-mt-4 overflow-hidden rounded-[18px] border border-neutral-500 bg-neutral-950"
       >
         <div className="absolute inset-2 overflow-hidden rounded-xl">
           <SupportMap
@@ -439,4 +477,5 @@ export default function HomeExplorer() {
       )}
     </>
   );
-}
+};
+export default HomeExplorer;
