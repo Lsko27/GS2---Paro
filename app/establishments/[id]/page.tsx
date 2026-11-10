@@ -14,6 +14,7 @@ type EstablishmentApiResponse = {
   id: number;
   nome: string;
   descricao: string | null;
+  condicoesAcesso: string | null;
   cep: string;
   logradouro: string;
   numero: string;
@@ -96,6 +97,7 @@ async function EstablishmentContent({ params }: EstablishmentPageProps) {
     id: establishmentResponse.id,
     name: establishmentResponse.nome,
     description: establishmentResponse.descricao,
+    accessConditions: establishmentResponse.condicoesAcesso,
     zipCode: establishmentResponse.cep,
     street: establishmentResponse.logradouro,
     number: establishmentResponse.numero,

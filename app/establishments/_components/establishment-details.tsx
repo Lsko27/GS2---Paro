@@ -323,21 +323,12 @@ const EstablishmentDetails = ({
                 Condições de Acesso
               </h2>
 
-              {accessConditions.length > 0 ? (
-                <div className="mt-2 space-y-2">
-                  {accessConditions.map((condition) => (
-                    <p
-                      key={condition}
-                      className="text-xs leading-relaxed text-neutral-800"
-                    >
-                      {condition}
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-2 text-xs text-neutral-600">
-                  Condições de acesso ainda não informadas.
-                </p>
+              {establishment.accessConditions && (
+                <section className="space-y-2">
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-neutral-600">
+                    {establishment.accessConditions}
+                  </p>
+                </section>
               )}
             </div>
           </section>

@@ -2,6 +2,7 @@ export type EstablishmentDetailsData = {
   id: number;
   name: string;
   description: string | null;
+  accessConditions: string | null;
   zipCode: string;
   street: string;
   number: string;
