@@ -53,6 +53,12 @@ const WEEK_DAYS = [
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+function isOpen24Hours(day: ScheduleDay) {
+  return (
+    !day.closed && day.openingTime === "00:00" && day.closingTime === "00:00"
+  );
+}
+
 function createEmptySchedule(): ScheduleDay[] {
   return WEEK_DAYS.map((label, index) => ({
     dayOfWeek: index + 1,
@@ -74,8 +80,8 @@ function mapSchedule(response: ScheduleResponse[]): ScheduleDay[] {
     return {
       ...day,
       closed: saved.fechado,
-      openingTime: saved.horaAbertura ?? "08:00",
-      closingTime: saved.horaFechamento ?? "18:00",
+      openingTime: saved.horaAbertura?.slice(0, 5) ?? "08:00",
+      closingTime: saved.horaFechamento?.slice(0, 5) ?? "18:00",
     };
   });
 }
@@ -197,12 +203,12 @@ const ScheduleManagementDialog = ({
         !day.closed &&
         (!TIME_PATTERN.test(day.openingTime) ||
           !TIME_PATTERN.test(day.closingTime) ||
-          day.openingTime >= day.closingTime),
+          (day.openingTime >= day.closingTime && !isOpen24Hours(day))),
     );
 
     if (invalidDay) {
       setDialogError(
-        `Confira ${invalidDay.label}: o fechamento deve ser posterior à abertura.`,
+        `Confira ${invalidDay.label}: o fechamento deve ser posterior à abertura ou selecione 24 horas.`,
       );
       return;
     }
@@ -311,7 +317,9 @@ const ScheduleManagementDialog = ({
                     <span className="text-right text-muted-foreground">
                       {day.closed
                         ? "Fechado"
-                        : `${day.openingTime} - ${day.closingTime}`}
+                        : isOpen24Hours(day)
+                          ? "Aberto 24 horas"
+                          : `${day.openingTime} - ${day.closingTime}`}
                     </span>
                   </div>
                 ))}
@@ -372,49 +380,68 @@ const ScheduleManagementDialog = ({
                 </label>
 
                 {!day.closed ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="grid min-w-0 gap-1.5">
-                      <label
-                        htmlFor={`opening-${day.dayOfWeek}`}
-                        className="text-xs font-medium"
-                      >
-                        Abertura
-                      </label>
-
-                      <Input
-                        id={`opening-${day.dayOfWeek}`}
-                        type="time"
-                        value={day.openingTime}
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-2 text-sm font-medium">
+                      <input
+                        type="checkbox"
+                        checked={isOpen24Hours(day)}
                         disabled={isSaving}
                         onChange={(event) =>
-                          updateDay(day.dayOfWeek, {
-                            openingTime: event.target.value,
-                          })
+                          updateDay(
+                            day.dayOfWeek,
+                            event.target.checked
+                              ? { openingTime: "00:00", closingTime: "00:00" }
+                              : { openingTime: "08:00", closingTime: "18:00" },
+                          )
                         }
-                        className="w-full"
+                        className="size-4 accent-teal-700"
                       />
-                    </div>
+                      Aberto 24 horas
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="grid min-w-0 gap-1.5">
+                        <label
+                          htmlFor={`opening-${day.dayOfWeek}`}
+                          className="text-xs font-medium"
+                        >
+                          Abertura
+                        </label>
 
-                    <div className="grid min-w-0 gap-1.5">
-                      <label
-                        htmlFor={`closing-${day.dayOfWeek}`}
-                        className="text-xs font-medium"
-                      >
-                        Fechamento
-                      </label>
+                        <Input
+                          id={`opening-${day.dayOfWeek}`}
+                          type="time"
+                          value={day.openingTime}
+                          disabled={isSaving || isOpen24Hours(day)}
+                          onChange={(event) =>
+                            updateDay(day.dayOfWeek, {
+                              openingTime: event.target.value,
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
 
-                      <Input
-                        id={`closing-${day.dayOfWeek}`}
-                        type="time"
-                        value={day.closingTime}
-                        disabled={isSaving}
-                        onChange={(event) =>
-                          updateDay(day.dayOfWeek, {
-                            closingTime: event.target.value,
-                          })
-                        }
-                        className="w-full"
-                      />
+                      <div className="grid min-w-0 gap-1.5">
+                        <label
+                          htmlFor={`closing-${day.dayOfWeek}`}
+                          className="text-xs font-medium"
+                        >
+                          Fechamento
+                        </label>
+
+                        <Input
+                          id={`closing-${day.dayOfWeek}`}
+                          type="time"
+                          value={day.closingTime}
+                          disabled={isSaving || isOpen24Hours(day)}
+                          onChange={(event) =>
+                            updateDay(day.dayOfWeek, {
+                              closingTime: event.target.value,
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (

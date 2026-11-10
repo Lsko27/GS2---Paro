@@ -298,7 +298,9 @@ const EstablishmentDetails = ({
                         </span>
 
                         <span className="shrink-0 font-medium text-neutral-950">
-                          {group.label}
+                          {group.label.trim() === "00:00 - 00:00"
+                            ? "Aberto 24h"
+                            : group.label}
                         </span>
                       </div>
                     ))}

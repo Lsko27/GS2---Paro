@@ -60,6 +60,27 @@ export default function ReviewForm({
     setError(null);
 
     try {
+      // Obtém o token CSRF do Spring Security.
+      const csrfResponse = await fetch("/api/auth/csrf", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!csrfResponse.ok) {
+        throw new Error("Não foi possível obter o token de segurança.");
+      }
+
+      const csrf = (await csrfResponse.json()) as {
+        headerName: string;
+        token: string;
+      };
+
+      if (csrf.headerName !== "X-XSRF-TOKEN" || !csrf.token) {
+        throw new Error("Token CSRF inválido.");
+      }
+
+      // Envia a avaliação com o JWT e o token CSRF.
       const response = await fetch(
         `/api/establishments/${establishmentId}/reviews`,
         {
@@ -67,6 +88,7 @@ export default function ReviewForm({
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            "X-XSRF-TOKEN": csrf.token,
           },
           body: JSON.stringify({
             nota: rating,
@@ -81,13 +103,14 @@ export default function ReviewForm({
             ? "Faça login para avaliar este estabelecimento."
             : response.status === 403
               ? "Não foi possível autorizar a avaliação."
-              : "Não foi possível enviar sua avaliação.",
+              : response.status === 409
+                ? "Você já avaliou este estabelecimento."
+                : "Não foi possível enviar sua avaliação.",
         );
       }
 
       onOpenChange(false);
       resetForm();
-
       router.refresh();
     } catch (err) {
       setError(

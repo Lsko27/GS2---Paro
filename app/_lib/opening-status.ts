@@ -27,9 +27,7 @@ export function getOpeningStatus(
   }).formatToParts(currentTime);
 
   const weekday = parts.find((part) => part.type === "weekday")?.value;
-
   const hour = parts.find((part) => part.type === "hour")?.value;
-
   const minute = parts.find((part) => part.type === "minute")?.value;
 
   const dayNumber = weekday ? WEEKDAY_NUMBERS[weekday] : undefined;
@@ -52,6 +50,14 @@ export function getOpeningStatus(
 
   if (!today.openingTime || !today.closingTime) {
     return null;
+  }
+
+  // O backend representa funcionamento 24 horas como 00:00–00:00.
+  const open24Hours =
+    today.openingTime === "00:00" && today.closingTime === "00:00";
+
+  if (open24Hours) {
+    return true;
   }
 
   const currentHour = `${hour}:${minute}`;
