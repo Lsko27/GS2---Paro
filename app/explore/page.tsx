@@ -4,6 +4,7 @@ import Footer from "../_components/footer";
 import Navbar from "../_components/navbar";
 import { searchEstablishments } from "../_services/establishment-service";
 import EstablishmentCard from "./_components/establishment-card";
+import Link from "next/link";
 
 const ExplorePage = async () => {
   const searchCenter = {
@@ -50,11 +51,16 @@ const ExplorePage = async () => {
               </p>
             ) : (
               establishments.map((establishment) => (
-                <EstablishmentCard
+                <Link
                   key={establishment.id}
-                  establishment={establishment}
-                  imageUrl={establishment.imageUrl}
-                />
+                  href={`/establishments/${establishment.id}`}
+                  className="block"
+                >
+                  <EstablishmentCard
+                    establishment={establishment}
+                    imageUrl={establishment.imageUrl}
+                  />
+                </Link>
               ))
             )}
           </div>
