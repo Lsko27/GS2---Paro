@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import type { LatLngTuple } from "leaflet";
 import { useEffect } from "react";
 import {
+  Circle,
   CircleMarker,
   MapContainer,
   Popup,
@@ -32,19 +33,70 @@ type SupportMapProps = {
   view: MapView;
   points: MapPoint[];
   userLocation: MapCoordinates | null;
+  searchCenter: MapCoordinates;
+  searchRadius: number;
 };
 
-function UpdateMapView({ view }: { view: MapView }) {
+function FitSearchRadius({
+  searchCenter,
+  searchRadius,
+}: {
+  searchCenter: MapCoordinates;
+  searchRadius: number;
+}) {
   const map = useMap();
 
+  const latitude = searchCenter[0];
+  const longitude = searchCenter[1];
+
   useEffect(() => {
-    map.setView(view.center, view.zoom);
-  }, [map, view.center, view.zoom]);
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      !Number.isFinite(searchRadius) ||
+      searchRadius <= 0
+    ) {
+      return;
+    }
+
+    const earthRadiusKm = 6371.0088;
+    const angularDistance = searchRadius / earthRadiusKm;
+
+    const latitudeRadians = (latitude * Math.PI) / 180;
+    const latitudeOffset = (angularDistance * 180) / Math.PI;
+
+    const longitudeOffset =
+      (Math.asin(
+        Math.min(
+          1,
+          Math.sin(angularDistance) /
+            Math.max(Math.abs(Math.cos(latitudeRadians)), 1e-12),
+        ),
+      ) *
+        180) /
+      Math.PI;
+
+    const bounds: LatLngTuple[] = [
+      [Math.max(-90, latitude - latitudeOffset), longitude - longitudeOffset],
+      [Math.min(90, latitude + latitudeOffset), longitude + longitudeOffset],
+    ];
+
+    map.fitBounds(bounds, {
+      padding: [20, 20],
+      animate: false,
+    });
+  }, [map, latitude, longitude, searchRadius]);
 
   return null;
 }
 
-const SupportMap = ({ view, points, userLocation }: SupportMapProps) => {
+export default function SupportMap({
+  view,
+  points,
+  userLocation,
+  searchCenter,
+  searchRadius,
+}: SupportMapProps) {
   const cartoKey = process.env.NEXT_PUBLIC_CARTO_BASEMAP_KEY?.trim();
 
   if (!cartoKey) {
@@ -77,7 +129,24 @@ const SupportMap = ({ view, points, userLocation }: SupportMapProps) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
 
-      <UpdateMapView view={view} />
+      <FitSearchRadius
+        searchCenter={searchCenter}
+        searchRadius={searchRadius}
+      />
+
+      <Circle
+        center={searchCenter}
+        radius={searchRadius * 1000}
+        pathOptions={{
+          color: "#37a698",
+          weight: 2,
+          opacity: 1,
+          fillColor: "#37a698",
+          fillOpacity: 0.2,
+          dashArray: "6 6",
+          interactive: false,
+        }}
+      />
 
       {points.map((point) => (
         <CircleMarker
@@ -115,6 +184,4 @@ const SupportMap = ({ view, points, userLocation }: SupportMapProps) => {
       )}
     </MapContainer>
   );
-};
-
-export default SupportMap;
+}

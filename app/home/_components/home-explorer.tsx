@@ -463,6 +463,8 @@ const HomeExplorer = () => {
             view={mapView}
             points={points}
             userLocation={userLocation}
+            searchRadius={searchRadius}
+            searchCenter={searchCenter}
           />
         </div>
       </section>
