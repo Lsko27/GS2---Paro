@@ -5,7 +5,7 @@ import { CarTaxiFront, Loader2, Store } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import Swal from "sweetalert2";
 
 import { Button } from "@/app/_components/ui/button";
@@ -58,7 +58,10 @@ const RegisterForm = () => {
     },
   });
 
-  const selectedRole = form.watch("role");
+  const selectedRole = useWatch({
+    control: form.control,
+    name: "role",
+  });
 
   const handleAccountTypeChange = (value: unknown) => {
     if (value !== "TRABALHADOR" && value !== "ESTABELECIMENTO") {

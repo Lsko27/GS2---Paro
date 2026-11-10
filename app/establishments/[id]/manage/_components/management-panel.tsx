@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Clock3, Droplets, Loader2, Store } from "lucide-react";
+import { Store } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -14,15 +14,16 @@ import type { EstablishmentResource } from "@/app/_types/establishment-resources
 import ResourceManagementForm from "./resource-management-form";
 import ScheduleManagementDialog from "./schedule-management-dialog";
 import AccessConditionsDialog from "./access-conditions-dialog";
+import EstablishmentEditDialog from "./establishment-edit-dialog";
 
 type ManagementPanelProps = {
   establishmentId: number;
 };
 
 const ManagementPanel = ({ establishmentId }: ManagementPanelProps) => {
-  const [resources, setResources] = useState<EstablishmentResource[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setResources] = useState<EstablishmentResource[]>([]);
+  const [, setIsLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -92,6 +93,8 @@ const ManagementPanel = ({ establishmentId }: ManagementPanelProps) => {
       <ScheduleManagementDialog establishmentId={establishmentId} />
 
       <AccessConditionsDialog establishmentId={establishmentId} />
+
+      <EstablishmentEditDialog establishmentId={establishmentId} />
     </div>
   );
 };

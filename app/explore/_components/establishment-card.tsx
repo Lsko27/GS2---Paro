@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Badge } from "@/app/_components/ui/badge";
 
 import { Button } from "@/app/_components/ui/button";
 import {

@@ -1,12 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Droplets, Loader2 } from "lucide-react";
+import { Droplets, Loader2, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/app/_components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/app/_components/ui/collapsible";
 import {
   Card,
   CardContent,
@@ -14,8 +19,6 @@ import {
   CardTitle,
 } from "@/app/_components/ui/card";
 import { Input } from "@/app/_components/ui/input";
-
-import ScheduleManagementDialog from "./schedule-management-dialog";
 
 type CatalogResource = {
   id: number;
@@ -130,6 +133,7 @@ const ResourceManagementForm = ({
   establishmentId,
 }: ResourceManagementFormProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [loadVersion, setLoadVersion] = useState(0);
   const [initialRows, setInitialRows] = useState<ResourceRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -300,169 +304,186 @@ const ResourceManagementForm = ({
   };
 
   return (
-    <Card className="gap-4 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none ring-0">
-      <CardHeader className="p-0">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold">
-          <Droplets className="size-5 text-primary" />
-          Recursos disponíveis
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="p-0">
-        {isLoading ? (
-          <p
-            role="status"
-            className="flex items-center gap-2 text-sm text-muted-foreground"
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="gap-4 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none ring-0">
+        <CardHeader className="p-0">
+          <CollapsibleTrigger
+            className="flex w-full cursor-pointer items-center justify-between gap-3 text-left"
+            disabled={isSubmitting}
           >
-            <Loader2 className="size-4 animate-spin" />
-            Carregando recursos...
-          </p>
-        ) : initialRows.length === 0 && !error ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhum recurso encontrado no catálogo.
-          </p>
-        ) : (
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
-            {initialRows.map((resource, index) => (
-              <Controller
-                key={resource.resourceId}
-                control={control}
-                name={`resources.${index}`}
-                render={({ field }) => {
-                  const value = field.value;
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <Droplets className="size-5 text-primary" />
+              Recursos disponíveis
+            </CardTitle>
+          </CollapsibleTrigger>
+          <ChevronDown
+            className={`size-5 shrink-0 text-muted-foreground transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </CardHeader>
 
-                  return (
-                    <div className="space-y-3 rounded-xl border border-neutral-200 p-3">
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={value.enabled}
-                          onChange={(event) =>
-                            field.onChange({
-                              ...value,
-                              enabled: event.target.checked,
-                            })
-                          }
-                          disabled={isSubmitting}
-                          className="size-4 accent-teal-700"
-                        />
+        <CollapsibleContent>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <p
+                role="status"
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <Loader2 className="size-4 animate-spin" />
+                Carregando recursos...
+              </p>
+            ) : initialRows.length === 0 && !error ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhum recurso encontrado no catálogo.
+              </p>
+            ) : (
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-4"
+              >
+                {initialRows.map((resource, index) => (
+                  <Controller
+                    key={resource.resourceId}
+                    control={control}
+                    name={`resources.${index}`}
+                    render={({ field }) => {
+                      const value = field.value;
 
-                        <span className="min-w-0">
-                          <span className="block text-sm font-semibold">
-                            {value.name}
-                          </span>
+                      return (
+                        <div className="space-y-3 rounded-xl border border-neutral-200 p-3">
+                          <label className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={value.enabled}
+                              onChange={(event) =>
+                                field.onChange({
+                                  ...value,
+                                  enabled: event.target.checked,
+                                })
+                              }
+                              disabled={isSubmitting}
+                              className="size-4 accent-teal-700"
+                            />
 
-                          {value.description && (
-                            <span className="block text-xs text-muted-foreground">
-                              {value.description}
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold">
+                                {value.name}
+                              </span>
+
+                              {value.description && (
+                                <span className="block text-xs text-muted-foreground">
+                                  {value.description}
+                                </span>
+                              )}
                             </span>
+                          </label>
+
+                          {value.enabled && (
+                            <div className="space-y-3 border-t border-neutral-200 pt-3">
+                              <label className="flex items-center gap-2 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={value.available}
+                                  onChange={(event) =>
+                                    field.onChange({
+                                      ...value,
+                                      available: event.target.checked,
+                                    })
+                                  }
+                                  disabled={isSubmitting}
+                                  className="size-4 accent-teal-700"
+                                />
+                                Disponível atualmente
+                              </label>
+
+                              <label className="flex items-center gap-2 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={value.free}
+                                  onChange={(event) =>
+                                    field.onChange({
+                                      ...value,
+                                      free: event.target.checked,
+                                    })
+                                  }
+                                  disabled={isSubmitting}
+                                  className="size-4 accent-teal-700"
+                                />
+                                Gratuito
+                              </label>
+
+                              <div className="grid gap-1.5">
+                                <label
+                                  htmlFor={`condition-${value.resourceId}`}
+                                  className="text-xs font-medium"
+                                >
+                                  Condições de acesso
+                                </label>
+
+                                <Input
+                                  id={`condition-${value.resourceId}`}
+                                  value={value.condition}
+                                  maxLength={500}
+                                  onChange={(event) =>
+                                    field.onChange({
+                                      ...value,
+                                      condition: event.target.value,
+                                    })
+                                  }
+                                  disabled={isSubmitting}
+                                  placeholder="Ex.: uso liberado sem consumo"
+                                />
+
+                                {errors.resources?.[index]?.condition && (
+                                  <p className="text-xs text-red-600">
+                                    {
+                                      errors.resources[index]?.condition
+                                        ?.message
+                                    }
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           )}
-                        </span>
-                      </label>
-
-                      {value.enabled && (
-                        <div className="space-y-3 border-t border-neutral-200 pt-3">
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={value.available}
-                              onChange={(event) =>
-                                field.onChange({
-                                  ...value,
-                                  available: event.target.checked,
-                                })
-                              }
-                              disabled={isSubmitting}
-                              className="size-4 accent-teal-700"
-                            />
-                            Disponível atualmente
-                          </label>
-
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={value.free}
-                              onChange={(event) =>
-                                field.onChange({
-                                  ...value,
-                                  free: event.target.checked,
-                                })
-                              }
-                              disabled={isSubmitting}
-                              className="size-4 accent-teal-700"
-                            />
-                            Gratuito
-                          </label>
-
-                          <div className="grid gap-1.5">
-                            <label
-                              htmlFor={`condition-${value.resourceId}`}
-                              className="text-xs font-medium"
-                            >
-                              Condições de acesso
-                            </label>
-
-                            <Input
-                              id={`condition-${value.resourceId}`}
-                              value={value.condition}
-                              maxLength={500}
-                              onChange={(event) =>
-                                field.onChange({
-                                  ...value,
-                                  condition: event.target.value,
-                                })
-                              }
-                              disabled={isSubmitting}
-                              placeholder="Ex.: uso liberado sem consumo"
-                            />
-
-                            {errors.resources?.[index]?.condition && (
-                              <p className="text-xs text-red-600">
-                                {errors.resources[index]?.condition?.message}
-                              </p>
-                            )}
-                          </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                }}
-              />
-            ))}
+                      );
+                    }}
+                  />
+                ))}
 
-            {error && (
-              <p role="alert" className="text-sm text-red-600">
-                {error}
-              </p>
+                {error && (
+                  <p role="alert" className="text-sm text-red-600">
+                    {error}
+                  </p>
+                )}
+
+                {message && (
+                  <p role="status" className="text-sm text-teal-700">
+                    {message}
+                  </p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || Boolean(error)}
+                  className="h-11 w-full rounded-full bg-paro-orange text-white"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    "Salvar recursos"
+                  )}
+                </Button>
+              </form>
             )}
-
-            {message && (
-              <p role="status" className="text-sm text-teal-700">
-                {message}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isSubmitting || Boolean(error)}
-              className="h-11 w-full rounded-full bg-paro-orange text-white"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                "Salvar recursos"
-              )}
-            </Button>
-          </form>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 };
 
