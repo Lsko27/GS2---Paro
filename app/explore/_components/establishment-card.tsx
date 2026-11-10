@@ -13,6 +13,7 @@ import {
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import OpeningStatusBadge from "@/app/_components/opening-status-badge";
 import { Button } from "@/app/_components/ui/button";
 import {
   Card,
@@ -20,15 +21,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
-
+import { getOpeningStatus } from "@/app/_lib/opening-status";
 import type { EstablishmentSearchResult } from "@/app/_types/establishment";
+import type { OpeningHour } from "@/app/_types/establishment-details";
 import type { EstablishmentResource } from "@/app/_types/establishment-resources";
-import OpeningStatusBadge from "@/app/_components/opening-status-badge";
 
 type EstablishmentCardProps = {
   establishment: EstablishmentSearchResult;
   imageUrl?: string | null;
-  isOpen: boolean | null;
+};
+
+type OpeningHourResponse = {
+  id: number;
+  estabelecimentoId: number;
+  diaSemana: number;
+  horaAbertura: string | null;
+  horaFechamento: string | null;
+  fechado: boolean;
 };
 
 function normalizeText(text: string) {
@@ -59,7 +68,6 @@ function getResourceIcon(name: string) {
 const EstablishmentCard = ({
   establishment,
   imageUrl,
-  isOpen,
 }: EstablishmentCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
@@ -68,6 +76,11 @@ const EstablishmentCard = ({
   const [isLoadingResources, setIsLoadingResources] = useState(true);
   const [resourcesError, setResourcesError] = useState(false);
 
+  const [openingHours, setOpeningHours] = useState<OpeningHour[]>([]);
+  const [isLoadingHours, setIsLoadingHours] = useState(true);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+  // Carrega os recursos do estabelecimento.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -76,12 +89,14 @@ const EstablishmentCard = ({
         const response = await fetch(
           `/api/establishments/${establishment.id}/resources`,
           {
+            credentials: "include",
+            cache: "no-store",
             signal: controller.signal,
           },
         );
 
         if (!response.ok) {
-          throw new Error("Failed to load establishment resources");
+          throw new Error("Não foi possível carregar os recursos.");
         }
 
         const data = (await response.json()) as EstablishmentResource[];
@@ -93,7 +108,7 @@ const EstablishmentCard = ({
       } catch (error) {
         if (controller.signal.aborted) return;
 
-        console.error("Error loading establishment resources:", error);
+        console.error("Erro ao carregar recursos:", error);
         setResourcesError(true);
       } finally {
         if (!controller.signal.aborted) {
@@ -106,6 +121,75 @@ const EstablishmentCard = ({
 
     return () => controller.abort();
   }, [establishment.id]);
+
+  // Carrega os horários cadastrados no Java.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadOpeningHours() {
+      try {
+        const response = await fetch(
+          `/api/establishments/${establishment.id}/hours`,
+          {
+            credentials: "include",
+            cache: "no-store",
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Não foi possível carregar os horários.");
+        }
+
+        const data = (await response.json()) as OpeningHourResponse[];
+
+        if (controller.signal.aborted) return;
+
+        const mappedHours: OpeningHour[] = data.map((hour) => ({
+          id: hour.id,
+          establishmentId: hour.estabelecimentoId,
+          dayOfWeek: hour.diaSemana,
+          openingTime: hour.horaAbertura,
+          closingTime: hour.horaFechamento,
+          closed: hour.fechado,
+        }));
+
+        setOpeningHours(mappedHours);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+
+        console.error("Erro ao carregar horários:", error);
+        setOpeningHours([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingHours(false);
+        }
+      }
+    }
+
+    void loadOpeningHours();
+
+    return () => controller.abort();
+  }, [establishment.id]);
+
+  // Atualiza o horário atual a cada minuto.
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(new Date());
+    };
+
+    updateTime();
+
+    const interval = setInterval(updateTime, 60_000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Reutiliza a regra de funcionamento já existente.
+  const isOpen =
+    isLoadingHours || currentTime === null
+      ? null
+      : getOpeningStatus(openingHours, currentTime);
 
   const address = [
     establishment.street,
@@ -151,7 +235,12 @@ const EstablishmentCard = ({
                   : `Marcar ${establishment.name} como favorito temporário`
               }
               aria-pressed={isFavorite}
-              onClick={() => setIsFavorite((current) => !current)}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                setIsFavorite((current) => !current);
+              }}
               className="size-8 shrink-0 rounded-full text-slate-700"
             >
               <Heart
@@ -174,6 +263,7 @@ const EstablishmentCard = ({
               className="mt-0.5 size-3.5 shrink-0 text-slate-700"
               aria-hidden="true"
             />
+
             <span className="min-w-0">{address}</span>
           </p>
 
@@ -202,10 +292,13 @@ const EstablishmentCard = ({
                 return (
                   <li
                     key={resource.id}
-                    title={`${resource.name}${resource.free ? " — Gratuito" : " — Consulte as condições"}${resource.condition ? ` — ${resource.condition}` : ""}`}
+                    title={`${resource.name}${
+                      resource.free ? " — Gratuito" : " — Consulte as condições"
+                    }${resource.condition ? ` — ${resource.condition}` : ""}`}
                     className="grid h-6 w-9 place-items-center rounded-full border border-neutral-300"
                   >
                     <Icon className="size-3.5" aria-hidden="true" />
+
                     <span className="sr-only">{resource.name}</span>
                   </li>
                 );

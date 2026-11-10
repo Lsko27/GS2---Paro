@@ -59,7 +59,6 @@ const ExplorePage = async () => {
                   <EstablishmentCard
                     establishment={establishment}
                     imageUrl={establishment.imageUrl}
-                    isOpen={null}
                   />
                 </Link>
               ))
