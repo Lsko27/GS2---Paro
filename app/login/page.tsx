@@ -17,6 +17,7 @@ import {
   FieldLabel,
 } from "../_components/ui/field";
 import { Input } from "../_components/ui/input";
+import { setAuthToast } from "../_components/auth-toast";
 
 const formSchema = z.object({
   email: z
@@ -102,8 +103,9 @@ const LoginPage = () => {
         );
       }
 
+      setAuthToast("login");
+
       router.replace("/home");
-      router.refresh();
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : "Ocorreu um erro inesperado.",

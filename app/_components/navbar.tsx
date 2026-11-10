@@ -8,12 +8,13 @@ import {
   Loader2,
   Menu,
   UserRound,
+  LogOut,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { buttonVariants } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import {
   Sheet,
   SheetContent,
@@ -23,14 +24,20 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import NotificationsDropdown from "./notifications-dropdown";
-import { getAuthenticatedUser } from "../_services/auth-service";
+import { getAuthenticatedUser, logout } from "../_services/auth-service";
 import { AuthenticatedUser } from "../_types/auth";
+import { useRouter } from "next/navigation";
+import { setAuthToast } from "./auth-toast";
 
 const Navbar = () => {
+  const router = useRouter();
   const [menuAberto, setMenuAberto] = useState(false);
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [authError, setAuthError] = useState(false);
+
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -61,6 +68,35 @@ const Navbar = () => {
       active = false;
     };
   }, []);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    setLogoutError(null);
+
+    try {
+      await logout();
+
+      setAuthToast("logout");
+
+      setUser(null);
+      setMenuAberto(false);
+
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Erro ao encerrar sessão:", error);
+
+      setLogoutError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível sair da conta.",
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const perguntasParo = [
     {
@@ -216,6 +252,34 @@ const Navbar = () => {
                   </p>
                 </section>
               </div>
+              {user && (
+                <div className="border-t border-neutral-200 p-4">
+                  {logoutError && (
+                    <p role="alert" className="mb-3 text-xs text-red-600">
+                      {logoutError}
+                    </p>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="h-11 w-full justify-start gap-3 rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    {isLoggingOut ? (
+                      <Loader2
+                        className="size-5 animate-spin"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <LogOut className="size-5" aria-hidden="true" />
+                    )}
+
+                    {isLoggingOut ? "Saindo..." : "Sair da conta"}
+                  </Button>
+                </div>
+              )}
             </SheetContent>
           </Sheet>
         </div>
