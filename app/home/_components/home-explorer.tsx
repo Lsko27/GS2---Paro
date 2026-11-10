@@ -36,9 +36,9 @@ const SupportMap = dynamic(() => import("@/app/_components/map/support-map"), {
   ),
 });
 
-const INITIAL_CENTER: MapCoordinates = [-23.5631, -46.6544];
+const FALLBACK_CENTER: MapCoordinates = [-23.5631, -46.6544];
 const INITIAL_MAP_VIEW: MapView = {
-  center: INITIAL_CENTER,
+  center: FALLBACK_CENTER,
   zoom: 14,
 };
 const RADIUS_OPTIONS = [1, 3, 5, 10, 20] as const;
@@ -119,11 +119,36 @@ const HomeExplorer = () => {
     EstablishmentSearchResult[]
   >([]);
   const [searchCenter, setSearchCenter] =
-    useState<MapCoordinates>(INITIAL_CENTER);
+    useState<MapCoordinates>(FALLBACK_CENTER);
   const [userLocation, setUserLocation] = useState<MapCoordinates | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!navigator.geolocation || !window.isSecureContext) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const coordinates: MapCoordinates = [coords.latitude, coords.longitude];
+
+        setUserLocation(coordinates);
+        setSearchCenter(coordinates);
+        setMapFocus(null);
+      },
+      () => {
+        // Mantém a região de referência caso a localização
+        // não esteja disponível ou a permissão seja negada.
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 60000,
+      },
+    );
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();

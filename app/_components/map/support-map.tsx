@@ -12,6 +12,7 @@ import {
   MapContainer,
   Popup,
   TileLayer,
+  Tooltip,
   useMap,
 } from "react-leaflet";
 
@@ -247,7 +248,7 @@ export default function SupportMap({
             fillOpacity: 1,
           }}
         >
-          <Popup>Você está aqui</Popup>
+          <Tooltip direction="top">Você está aqui</Tooltip>
         </CircleMarker>
       )}
     </MapContainer>

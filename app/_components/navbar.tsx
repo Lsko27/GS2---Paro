@@ -5,12 +5,13 @@ import {
   ChevronRight,
   CircleHelp,
   Info,
+  Loader2,
   Menu,
   UserRound,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { buttonVariants } from "./ui/button";
 import {
@@ -22,18 +23,44 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import NotificationsDropdown from "./notifications-dropdown";
+import { getAuthenticatedUser } from "../_services/auth-service";
+import { AuthenticatedUser } from "../_types/auth";
 
-type NavbarProps = {
-  conta?: {
-    nome: string;
-    tipo: "Trabalhador" | "Estabelecimento";
-  };
-};
-
-const Navbar = ({
-  conta = { nome: "Alex Santos", tipo: "Trabalhador" },
-}: NavbarProps) => {
+const Navbar = () => {
   const [menuAberto, setMenuAberto] = useState(false);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [authError, setAuthError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadUser() {
+      try {
+        const authenticatedUser = await getAuthenticatedUser();
+
+        if (active) {
+          setUser(authenticatedUser);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar usuário:", error);
+
+        if (active) {
+          setAuthError(true);
+        }
+      } finally {
+        if (active) {
+          setIsLoadingUser(false);
+        }
+      }
+    }
+
+    void loadUser();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const perguntasParo = [
     {
@@ -52,6 +79,13 @@ const Navbar = ({
         "Toque no ícone de localização ao lado da busca. Ao permitir o acesso no navegador, o mapa centraliza na sua posição.",
     },
   ];
+
+  const userTypeLabel =
+    user?.tipoUsuario === "TRABALHADOR"
+      ? "Trabalhador"
+      : user?.tipoUsuario === "ESTABELECIMENTO"
+        ? "Estabelecimento"
+        : user?.tipoUsuario;
 
   return (
     <nav aria-label="Navegação superior" className="border-b-2 p-6">
@@ -79,32 +113,67 @@ const Navbar = ({
               </SheetHeader>
 
               <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
-                <Link
-                  href="/profile"
-                  onClick={() => setMenuAberto(false)}
-                  className="flex items-center gap-3 rounded-xl border border-neutral-200 p-3 hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
-                >
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                    <UserRound className="size-5" aria-hidden="true" />
-                  </span>
+                {isLoadingUser ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-neutral-200 p-3">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                      <Loader2
+                        className="size-5 animate-spin"
+                        aria-hidden="true"
+                      />
+                    </span>
 
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">
-                      {conta.nome}
+                    <span className="text-sm text-muted-foreground">
+                      Carregando perfil...
                     </span>
-                    <span className="block text-xs text-muted-foreground">
-                      {conta.tipo}
+                  </div>
+                ) : user ? (
+                  <Link
+                    href="/profile"
+                    onClick={() => setMenuAberto(false)}
+                    className="flex items-center gap-3 rounded-xl border border-neutral-200 p-3 hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                      <UserRound className="size-5" aria-hidden="true" />
                     </span>
-                    <span className="mt-1 block text-xs font-medium text-primary">
-                      Meu perfil
-                    </span>
-                  </span>
 
-                  <ChevronRight
-                    className="size-4 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                </Link>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">
+                        {user.nome}
+                      </span>
+
+                      <span className="block text-xs text-muted-foreground">
+                        {userTypeLabel}
+                      </span>
+
+                      <span className="mt-1 block text-xs font-medium text-primary">
+                        Meu perfil
+                      </span>
+                    </span>
+
+                    <ChevronRight
+                      className="size-4 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                ) : (
+                  <div className="rounded-xl border border-neutral-200 p-3">
+                    <p className="text-sm text-muted-foreground">
+                      {authError
+                        ? "Não foi possível carregar sua conta."
+                        : "Você ainda não está conectado."}
+                    </p>
+
+                    {!authError && (
+                      <Link
+                        href="/login"
+                        onClick={() => setMenuAberto(false)}
+                        className="mt-2 block w-fit text-sm font-semibold text-primary underline"
+                      >
+                        Fazer login
+                      </Link>
+                    )}
+                  </div>
+                )}
 
                 <section className="space-y-2">
                   <h3 className="flex items-center gap-2 px-1 text-sm font-semibold">
