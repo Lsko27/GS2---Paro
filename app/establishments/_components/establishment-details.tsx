@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowLeft,
   CarFront,
@@ -14,6 +16,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+import { useState } from "react";
+import ReviewForm from "./review-form";
 
 import type {
   EstablishmentDetailsData,
@@ -151,14 +156,7 @@ const EstablishmentDetails = ({
   currentTime,
 }: EstablishmentDetailsProps) => {
   const availableResources = resources.filter((resource) => resource.available);
-
-  const accessConditions = [
-    ...new Set(
-      availableResources
-        .map((resource) => resource.condition?.trim())
-        .filter((condition): condition is string => Boolean(condition)),
-    ),
-  ];
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
 
   const address = `${establishment.street}, ${establishment.number} - ${establishment.neighborhood}, ${establishment.city} - ${establishment.state}`;
 
@@ -401,8 +399,7 @@ const EstablishmentDetails = ({
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            disabled
-            title="Formulário de avaliação em implementação"
+            onClick={() => setReviewDialogOpen(true)}
             className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-teal-800 text-sm font-semibold text-teal-900 opacity-60"
           >
             <Star className="size-5" />
@@ -420,6 +417,11 @@ const EstablishmentDetails = ({
           </a>
         </div>
       </footer>
+      <ReviewForm
+        establishmentId={establishment.id}
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+      />
     </div>
   );
 };

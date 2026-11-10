@@ -9,6 +9,7 @@ import {
   Plug,
   Store,
   Toilet,
+  Star,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -38,6 +39,12 @@ type OpeningHourResponse = {
   horaAbertura: string | null;
   horaFechamento: string | null;
   fechado: boolean;
+};
+
+type ReviewSummaryResponse = {
+  estabelecimentoId: number;
+  media: number | null;
+  totalAvaliacoes: number;
 };
 
 function normalizeText(text: string) {
@@ -71,6 +78,12 @@ const EstablishmentCard = ({
 }: EstablishmentCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+
+  const [reviewSummary, setReviewSummary] =
+    useState<ReviewSummaryResponse | null>(null);
+
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+  const [reviewsError, setReviewsError] = useState(false);
 
   const [resources, setResources] = useState<EstablishmentResource[]>([]);
   const [isLoadingResources, setIsLoadingResources] = useState(true);
@@ -185,6 +198,50 @@ const EstablishmentCard = ({
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadReviewSummary() {
+      setIsLoadingReviews(true);
+      setReviewsError(false);
+      setReviewSummary(null);
+
+      try {
+        const response = await fetch(
+          `/api/establishments/${establishment.id}/reviews/summary`,
+          {
+            credentials: "include",
+            cache: "no-store",
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Não foi possível carregar as avaliações.");
+        }
+
+        const data = (await response.json()) as ReviewSummaryResponse;
+
+        if (controller.signal.aborted) return;
+
+        setReviewSummary(data);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+
+        console.error("Erro ao carregar avaliações:", error);
+        setReviewsError(true);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingReviews(false);
+        }
+      }
+    }
+
+    void loadReviewSummary();
+
+    return () => controller.abort();
+  }, [establishment.id]);
+
   // Reutiliza a regra de funcionamento já existente.
   const isOpen =
     isLoadingHours || currentTime === null
@@ -252,10 +309,42 @@ const EstablishmentCard = ({
             </Button>
           </CardHeader>
 
-          {establishment.description && (
-            <p className="line-clamp-2 text-xs text-neutral-600">
-              {establishment.description}
+          {isLoadingReviews ? (
+            <p className="text-xs text-neutral-500">Carregando avaliações...</p>
+          ) : reviewsError ? (
+            <p className="text-xs text-neutral-500">
+              Avaliações indisponíveis.
             </p>
+          ) : reviewSummary &&
+            reviewSummary.totalAvaliacoes > 0 &&
+            reviewSummary.media !== null ? (
+            <div
+              className="flex items-center gap-1.5"
+              aria-label={`Nota média ${reviewSummary.media.toFixed(1)} de 5, baseada em ${reviewSummary.totalAvaliacoes} avaliações`}
+            >
+              <Star
+                className="size-4 fill-amber-400 text-amber-400"
+                aria-hidden="true"
+              />
+
+              <span className="text-sm font-semibold text-neutral-900">
+                {reviewSummary.media.toFixed(1).replace(".", ",")}
+              </span>
+
+              <span className="text-xs text-neutral-500">
+                ({reviewSummary.totalAvaliacoes}{" "}
+                {reviewSummary.totalAvaliacoes === 1
+                  ? "avaliação"
+                  : "avaliações"}
+                )
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-neutral-500">
+              <Star className="size-4" aria-hidden="true" />
+
+              <span className="text-xs">Ainda não avaliado</span>
+            </div>
           )}
 
           <p className="flex items-start gap-2 text-sm text-neutral-800">
