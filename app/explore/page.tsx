@@ -2,7 +2,7 @@
 
 import { Loader2, LocateFixed, MapPin, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import Footer from "@/app/_components/footer";
 import Navbar from "@/app/_components/navbar";
@@ -13,6 +13,18 @@ import type { EstablishmentSearchResult } from "@/app/_types/establishment";
 import EstablishmentCard from "./_components/establishment-card";
 
 const SEARCH_RADIUS_KM = 5;
+
+type TextSearchResponse = {
+  id: number;
+  nome: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  imagemUrl: string | null;
+  latitude: number;
+  longitude: number;
+};
 
 type UserLocation = {
   latitude: number;
@@ -32,14 +44,6 @@ function getGeolocationErrorMessage(error: GeolocationPositionError) {
   }
 }
 
-function normalizeText(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
 const ExplorePage = () => {
   const [establishments, setEstablishments] = useState<
     EstablishmentSearchResult[]
@@ -50,6 +54,11 @@ const ExplorePage = () => {
   const [searchVersion, setSearchVersion] = useState(0);
   const [search, setSearch] = useState("");
   const [submittedSearch, setSubmittedSearch] = useState("");
+
+  const [globalResults, setGlobalResults] = useState<TextSearchResponse[]>([]);
+
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const {
     favoriteIds,
@@ -142,63 +151,93 @@ const ExplorePage = () => {
     };
   }, [searchVersion]);
 
-  const filteredEstablishments = useMemo(() => {
-    const term = normalizeText(submittedSearch);
-
-    if (!term) return establishments;
-
-    return establishments.filter((establishment) => {
-      const searchableText = [
-        establishment.name,
-        establishment.street,
-        establishment.neighborhood,
-        establishment.city,
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      return normalizeText(searchableText).includes(term);
-    });
-  }, [establishments, submittedSearch]);
-
   const handleRefresh = () => {
     setIsLoading(true);
     setError(null);
     setSearchVersion((version) => version + 1);
   };
 
-  const handleSearch = () => {
-    setSubmittedSearch(search.trim());
-  };
-
   const handleUseMyLocation = () => {
     setSearch("");
     setSubmittedSearch("");
+    setGlobalResults([]);
+    setSearchError(null);
     handleRefresh();
   };
 
+  const handleSearch = async () => {
+    const term = search.trim();
+
+    setSubmittedSearch(term);
+
+    if (!term) {
+      setGlobalResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+
+    try {
+      const response = await fetch(
+        `/api/establishments/text-search?term=${encodeURIComponent(term)}`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Não foi possível pesquisar os pontos de apoio.");
+      }
+
+      const data = (await response.json()) as TextSearchResponse[];
+
+      setGlobalResults(data);
+    } catch (error) {
+      setSearchError(
+        error instanceof Error
+          ? error.message
+          : "Erro ao pesquisar estabelecimentos.",
+      );
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const globalEstablishments = globalResults.map((item) => ({
+    id: item.id,
+    name: item.nome,
+    street: item.logradouro,
+    number: item.numero,
+    neighborhood: item.bairro,
+    city: item.cidade,
+    imageUrl: item.imagemUrl,
+  }));
+
+  const visibleEstablishments = submittedSearch
+    ? globalEstablishments
+    : establishments;
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white">
       <Navbar />
 
       <main className="flex-1 px-3 pt-4 pb-24">
         <div className="p-2">
-          <h1 className="text-lg leading-tight font-semibold text-neutral-950">
-            Pontos de apoio perto de você
+          <h1>
+            {submittedSearch
+              ? "Resultados da pesquisa"
+              : "Pontos de apoio perto de você"}
           </h1>
           <div className="mt-4">
             <SearchBar
               value={search}
-              onChange={(value) => {
-                setSearch(value);
-
-                if (!value.trim()) {
-                  setSubmittedSearch("");
-                }
-              }}
+              onChange={setSearch}
               onSearch={handleSearch}
               onUseMyLocation={handleUseMyLocation}
               isLocating={isLoading}
+              isSearching={isSearching}
               className="mx-0 mt-0 mb-5"
             />
           </div>
@@ -253,42 +292,50 @@ const ExplorePage = () => {
           )}
 
           <div className="mt-4 flex flex-col gap-4">
-            {isLoading ? (
+            {(submittedSearch ? isSearching : isLoading) ? (
               <div
                 role="status"
                 className="flex flex-col items-center gap-3 py-16 text-center"
               >
                 <Loader2 className="size-7 animate-spin text-primary" />
+
                 <p className="text-sm text-neutral-600">
-                  Obtendo sua localização e buscando pontos de apoio...
+                  {submittedSearch
+                    ? `Pesquisando pontos de apoio para "${submittedSearch}"...`
+                    : "Obtendo sua localização e buscando pontos de apoio..."}
                 </p>
               </div>
-            ) : error ? (
+            ) : (submittedSearch ? searchError : error) ? (
               <div
                 role="alert"
                 className="flex flex-col items-center gap-4 py-12 text-center"
               >
                 <MapPin className="size-8 text-neutral-400" />
-                <p className="max-w-70 text-sm text-neutral-600">{error}</p>
+
+                <p className="max-w-70 text-sm text-neutral-600">
+                  {submittedSearch ? searchError : error}
+                </p>
+
                 <Button
                   type="button"
-                  onClick={handleRefresh}
+                  onClick={submittedSearch ? handleSearch : handleRefresh}
                   className="rounded-full bg-paro-orange text-white hover:bg-paro-orange/90"
                 >
                   Tentar novamente
                 </Button>
               </div>
-            ) : filteredEstablishments.length === 0 ? (
+            ) : visibleEstablishments.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-12 text-center">
                 <MapPin className="size-8 text-neutral-400" />
+
                 <p className="text-sm text-neutral-600">
                   {submittedSearch
-                    ? `Nenhum ponto de apoio encontrado para "${submittedSearch}".`
+                    ? `Nenhum ponto encontrado para "${submittedSearch}".`
                     : `Nenhum ponto de apoio encontrado em um raio de ${SEARCH_RADIUS_KM} km da sua localização.`}
                 </p>
               </div>
             ) : (
-              filteredEstablishments.map((establishment) => (
+              visibleEstablishments.map((establishment) => (
                 <Link
                   key={establishment.id}
                   href={`/establishments/${establishment.id}`}

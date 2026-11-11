@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { CircleAlert, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import {
 } from "../_components/ui/field";
 import { Input } from "../_components/ui/input";
 import { setAuthToast } from "../_components/auth-toast";
+import { Alert, AlertDescription, AlertTitle } from "../_components/ui/alert";
 
 const formSchema = z.object({
   email: z
@@ -84,27 +85,40 @@ const LoginPage = () => {
       });
 
       if (!response.ok) {
-        if (response.status === 401 || response.status === 400) {
-          setServerError("E-mail ou senha inválidos.");
-          return;
+        switch (response.status) {
+          case 400:
+            setServerError("Verifique os dados informados e tente novamente.");
+            return;
+
+          case 401:
+            setServerError("E-mail ou senha inválidos.");
+            return;
+
+          case 403:
+            setServerError(
+              "Não foi possível validar a sessão. Tente novamente.",
+            );
+            return;
+
+          case 429:
+            setServerError(
+              "Muitas tentativas de login. Por segurança, aguarde alguns minutos antes de tentar novamente.",
+            );
+            return;
+
+          default: {
+            const errorData = (await response
+              .json()
+              .catch(() => ({}))) as LoginErrorResponse;
+
+            throw new Error(
+              errorData.message ?? "Não foi possível realizar o login.",
+            );
+          }
         }
-
-        if (response.status === 403) {
-          setServerError("Não foi possível validar a sessão. Tente novamente.");
-          return;
-        }
-
-        const errorData = (await response
-          .json()
-          .catch(() => ({}))) as LoginErrorResponse;
-
-        throw new Error(
-          errorData.message ?? "Não foi possível realizar o login.",
-        );
       }
 
       setAuthToast("login");
-
       router.replace("/home");
     } catch (error) {
       setServerError(
@@ -192,9 +206,23 @@ const LoginPage = () => {
               </FieldGroup>
 
               {serverError && (
-                <p role="alert" className="mt-4 text-sm text-red-600">
-                  {serverError}
-                </p>
+                <Alert
+                  variant="destructive"
+                  role="alert"
+                  className="mt-4 rounded-xl border-red-200 bg-red-50 text-red-700"
+                >
+                  <CircleAlert aria-hidden="true" className="size-4" />
+
+                  <AlertTitle>
+                    {serverError.startsWith("Muitas tentativas")
+                      ? "Acesso temporariamente limitado"
+                      : "Não foi possível entrar"}
+                  </AlertTitle>
+
+                  <AlertDescription className="text-red-700">
+                    {serverError}
+                  </AlertDescription>
+                </Alert>
               )}
 
               <Link
