@@ -9,6 +9,7 @@ import Navbar from "../_components/navbar";
 import { Button } from "../_components/ui/button";
 import type { EstablishmentSearchResult } from "../_types/establishment";
 import EstablishmentCard from "./_components/establishment-card";
+import { useFavorites } from "@/app/_hooks/use-favorites";
 
 const SEARCH_RADIUS_KM = 5;
 
@@ -42,6 +43,14 @@ const ExplorePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchVersion, setSearchVersion] = useState(0);
+
+  const {
+    favoriteIds,
+    pendingIds,
+    isLoadingFavorites,
+    favoritesError,
+    toggleFavorite,
+  } = useFavorites();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -184,6 +193,15 @@ const ExplorePage = () => {
             </Button>
           </div>
 
+          {favoritesError && (
+            <p
+              role="alert"
+              className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-700"
+            >
+              {favoritesError}
+            </p>
+          )}
+
           <div className="mt-4 flex flex-col gap-4">
             {isLoading ? (
               <div
@@ -232,6 +250,11 @@ const ExplorePage = () => {
                   <EstablishmentCard
                     establishment={establishment}
                     imageUrl={establishment.imageUrl}
+                    isFavorite={favoriteIds.has(establishment.id)}
+                    isFavoritePending={
+                      isLoadingFavorites || pendingIds.has(establishment.id)
+                    }
+                    onToggleFavorite={toggleFavorite}
                   />
                 </Link>
               ))

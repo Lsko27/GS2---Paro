@@ -10,6 +10,7 @@ import {
   Menu,
   Store,
   UserRound,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -245,6 +246,18 @@ const Navbar = () => {
                         aria-hidden="true"
                       />
                       Explorar pontos de apoio
+                    </Link>
+
+                    <Link
+                      href="/favorites"
+                      onClick={() => setMenuAberto(false)}
+                      className="flex min-h-12 items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                    >
+                      <Heart
+                        className="size-5 text-primary"
+                        aria-hidden="true"
+                      />
+                      Meus Favoritos
                     </Link>
                   </div>
                 </section>

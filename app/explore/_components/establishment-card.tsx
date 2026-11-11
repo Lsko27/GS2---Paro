@@ -27,9 +27,19 @@ import type { EstablishmentSearchResult } from "@/app/_types/establishment";
 import type { OpeningHour } from "@/app/_types/establishment-details";
 import type { EstablishmentResource } from "@/app/_types/establishment-resources";
 
+type CardEstablishment = Pick<
+  EstablishmentSearchResult,
+  "id" | "name" | "street" | "number" | "neighborhood"
+> & {
+  distanceKm?: number;
+};
+
 type EstablishmentCardProps = {
-  establishment: EstablishmentSearchResult;
+  establishment: CardEstablishment;
   imageUrl?: string | null;
+  isFavorite: boolean;
+  isFavoritePending?: boolean;
+  onToggleFavorite: (establishmentId: number) => void;
 };
 
 type OpeningHourResponse = {
@@ -75,8 +85,10 @@ function getResourceIcon(name: string) {
 const EstablishmentCard = ({
   establishment,
   imageUrl,
+  isFavorite,
+  isFavoritePending = false,
+  onToggleFavorite,
 }: EstablishmentCardProps) => {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
   const [reviewSummary, setReviewSummary] =
@@ -286,17 +298,18 @@ const EstablishmentCard = ({
               type="button"
               variant="ghost"
               size="icon"
+              disabled={isFavoritePending}
               aria-label={
                 isFavorite
-                  ? `Desmarcar ${establishment.name}`
-                  : `Marcar ${establishment.name} como favorito temporário`
+                  ? `Remover ${establishment.name} dos favoritos`
+                  : `Adicionar ${establishment.name} aos favoritos`
               }
               aria-pressed={isFavorite}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
 
-                setIsFavorite((current) => !current);
+                onToggleFavorite(establishment.id);
               }}
               className="size-8 shrink-0 rounded-full text-slate-700"
             >
@@ -356,9 +369,11 @@ const EstablishmentCard = ({
             <span className="min-w-0">{address}</span>
           </p>
 
-          <p className="text-xs font-medium text-teal-700">
-            {establishment.distanceKm.toFixed(2)} km de distância
-          </p>
+          {typeof establishment.distanceKm === "number" && (
+            <p className="text-xs font-medium text-teal-700">
+              {establishment.distanceKm.toFixed(2)} km de distância
+            </p>
+          )}
 
           <div className="mt-1">
             <OpeningStatusBadge isOpen={isOpen} />
