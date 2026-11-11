@@ -2,14 +2,15 @@
 
 import { Loader2, LocateFixed, MapPin, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import Footer from "../_components/footer";
-import Navbar from "../_components/navbar";
-import { Button } from "../_components/ui/button";
-import type { EstablishmentSearchResult } from "../_types/establishment";
-import EstablishmentCard from "./_components/establishment-card";
+import Footer from "@/app/_components/footer";
+import Navbar from "@/app/_components/navbar";
+import SearchBar from "@/app/_components/search-bar";
+import { Button } from "@/app/_components/ui/button";
 import { useFavorites } from "@/app/_hooks/use-favorites";
+import type { EstablishmentSearchResult } from "@/app/_types/establishment";
+import EstablishmentCard from "./_components/establishment-card";
 
 const SEARCH_RADIUS_KM = 5;
 
@@ -22,27 +23,33 @@ function getGeolocationErrorMessage(error: GeolocationPositionError) {
   switch (error.code) {
     case 1:
       return "Permissão de localização negada. Habilite a localização nas configurações do navegador e tente novamente.";
-
     case 2:
       return "Não foi possível determinar sua localização. Verifique se o serviço de localização está ativado.";
-
     case 3:
       return "A localização demorou para responder. Tente novamente.";
-
     default:
       return "Não foi possível obter sua localização.";
   }
+}
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 const ExplorePage = () => {
   const [establishments, setEstablishments] = useState<
     EstablishmentSearchResult[]
   >([]);
-
   const [location, setLocation] = useState<UserLocation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchVersion, setSearchVersion] = useState(0);
+  const [search, setSearch] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
 
   const {
     favoriteIds,
@@ -89,18 +96,16 @@ const ExplorePage = () => {
 
         setEstablishments(data);
         setError(null);
-      } catch (error) {
+      } catch (fetchError) {
         if (cancelled) return;
 
         setError(
-          error instanceof Error
-            ? error.message
+          fetchError instanceof Error
+            ? fetchError.message
             : "Erro ao carregar estabelecimentos.",
         );
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     }
 
@@ -137,10 +142,39 @@ const ExplorePage = () => {
     };
   }, [searchVersion]);
 
+  const filteredEstablishments = useMemo(() => {
+    const term = normalizeText(submittedSearch);
+
+    if (!term) return establishments;
+
+    return establishments.filter((establishment) => {
+      const searchableText = [
+        establishment.name,
+        establishment.street,
+        establishment.neighborhood,
+        establishment.city,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      return normalizeText(searchableText).includes(term);
+    });
+  }, [establishments, submittedSearch]);
+
   const handleRefresh = () => {
     setIsLoading(true);
     setError(null);
     setSearchVersion((version) => version + 1);
+  };
+
+  const handleSearch = () => {
+    setSubmittedSearch(search.trim());
+  };
+
+  const handleUseMyLocation = () => {
+    setSearch("");
+    setSubmittedSearch("");
+    handleRefresh();
   };
 
   return (
@@ -148,10 +182,26 @@ const ExplorePage = () => {
       <Navbar />
 
       <main className="flex-1 px-3 pt-4 pb-24">
-        <div className="px-2">
+        <div className="p-2">
           <h1 className="text-lg leading-tight font-semibold text-neutral-950">
             Pontos de apoio perto de você
           </h1>
+          <div className="mt-4">
+            <SearchBar
+              value={search}
+              onChange={(value) => {
+                setSearch(value);
+
+                if (!value.trim()) {
+                  setSubmittedSearch("");
+                }
+              }}
+              onSearch={handleSearch}
+              onUseMyLocation={handleUseMyLocation}
+              isLocating={isLoading}
+              className="mx-0 mt-0 mb-5"
+            />
+          </div>
 
           <div className="mt-2 flex items-center justify-between gap-2">
             <p className="flex min-w-0 items-center gap-1.5 text-xs text-neutral-800">
@@ -209,7 +259,6 @@ const ExplorePage = () => {
                 className="flex flex-col items-center gap-3 py-16 text-center"
               >
                 <Loader2 className="size-7 animate-spin text-primary" />
-
                 <p className="text-sm text-neutral-600">
                   Obtendo sua localização e buscando pontos de apoio...
                 </p>
@@ -220,9 +269,7 @@ const ExplorePage = () => {
                 className="flex flex-col items-center gap-4 py-12 text-center"
               >
                 <MapPin className="size-8 text-neutral-400" />
-
                 <p className="max-w-70 text-sm text-neutral-600">{error}</p>
-
                 <Button
                   type="button"
                   onClick={handleRefresh}
@@ -231,17 +278,17 @@ const ExplorePage = () => {
                   Tentar novamente
                 </Button>
               </div>
-            ) : establishments.length === 0 ? (
+            ) : filteredEstablishments.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-12 text-center">
                 <MapPin className="size-8 text-neutral-400" />
-
                 <p className="text-sm text-neutral-600">
-                  Nenhum ponto de apoio encontrado em um raio de{" "}
-                  {SEARCH_RADIUS_KM} km da sua localização.
+                  {submittedSearch
+                    ? `Nenhum ponto de apoio encontrado para "${submittedSearch}".`
+                    : `Nenhum ponto de apoio encontrado em um raio de ${SEARCH_RADIUS_KM} km da sua localização.`}
                 </p>
               </div>
             ) : (
-              establishments.map((establishment) => (
+              filteredEstablishments.map((establishment) => (
                 <Link
                   key={establishment.id}
                   href={`/establishments/${establishment.id}`}

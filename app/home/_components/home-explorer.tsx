@@ -5,17 +5,13 @@ import {
   CircleParking,
   Droplet,
   LayoutGrid,
-  Loader2,
-  LocateFixed,
   Plug,
-  Search,
   Toilet,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/app/_components/ui/button";
-import { Input } from "@/app/_components/ui/input";
 import type { EstablishmentSearchResult } from "@/app/_types/establishment";
 import type {
   MapCoordinates,
@@ -23,6 +19,7 @@ import type {
   MapPoint,
   MapView,
 } from "@/app/_components/map/support-map";
+import SearchBar from "@/app/_components/search-bar";
 
 const SupportMap = dynamic(() => import("@/app/_components/map/support-map"), {
   ssr: false,
@@ -255,9 +252,9 @@ const HomeExplorer = () => {
     [visibleEstablishments, isResourceUnavailable],
   );
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleSearch() {
     const term = normalizeText(search);
+
     setSubmittedSearch(search);
 
     if (!term) {
@@ -336,47 +333,13 @@ const HomeExplorer = () => {
 
   return (
     <>
-      <form
-        role="search"
-        onSubmit={handleSearch}
-        className="relative z-10 mx-3 -mt-3 flex h-12 items-center rounded-full border bg-white px-1 shadow-sm focus-within:ring-2 focus-within:ring-primary/30"
-      >
-        <Button
-          type="submit"
-          variant="ghost"
-          size="icon"
-          aria-label="Buscar pontos"
-          className="size-8 shrink-0 rounded-full text-slate-700"
-        >
-          <Search className="size-4" aria-hidden="true" />
-        </Button>
-
-        <Input
-          type="search"
-          aria-label="Buscar endereço, bairro ou local"
-          placeholder="Buscar endereço, bairro ou local"
-          enterKeyHint="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          className="h-full min-w-0 border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 md:text-xs"
-        />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Usar minha localização"
-          disabled={isLocating}
-          onClick={handleUseMyLocation}
-          className="size-8 shrink-0 rounded-full text-slate-700"
-        >
-          {isLocating ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <LocateFixed className="size-4" aria-hidden="true" />
-          )}
-        </Button>
-      </form>
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        onSearch={handleSearch}
+        onUseMyLocation={handleUseMyLocation}
+        isLocating={isLocating}
+      />
 
       <div
         role="group"
