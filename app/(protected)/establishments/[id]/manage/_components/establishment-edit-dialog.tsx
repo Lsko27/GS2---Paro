@@ -28,7 +28,7 @@ import { getCoordinatesByAddress } from "@/app/_services/geocoding-service";
 import {
   establishmentSchema,
   type EstablishmentFormData,
-} from "@/app/establishments/_schemas/establishment-schema";
+} from "@/app/(protected)/establishments/_schemas/establishment-schema";
 
 interface EstablishmentEditDialogProps {
   establishmentId: number;

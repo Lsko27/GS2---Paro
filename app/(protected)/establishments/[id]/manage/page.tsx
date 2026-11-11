@@ -13,11 +13,14 @@ interface ManagePageProps {
   }>;
 }
 
-async function ProtectedManagement({
-  establishmentId,
-}: {
-  establishmentId: number;
-}) {
+async function ProtectedManagement({ params }: ManagePageProps) {
+  const { id } = await params;
+  const establishmentId = Number(id);
+
+  if (!Number.isSafeInteger(establishmentId) || establishmentId <= 0) {
+    redirect("/home");
+  }
+
   const user = await requireAuthenticatedUser();
 
   if (user.tipoUsuario !== "ESTABELECIMENTO") {
@@ -27,14 +30,17 @@ async function ProtectedManagement({
   return <ManagementPanel establishmentId={establishmentId} />;
 }
 
-const ManagePage = async ({ params }: ManagePageProps) => {
-  const { id } = await params;
-  const establishmentId = Number(id);
+function ManagementLoading() {
+  return (
+    <div role="status" className="flex items-center justify-center py-10">
+      <p className="text-sm text-muted-foreground">
+        Carregando gerenciamento...
+      </p>
+    </div>
+  );
+}
 
-  if (!Number.isSafeInteger(establishmentId) || establishmentId <= 0) {
-    redirect("/home");
-  }
-
+export default function ManagePage({ params }: ManagePageProps) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white">
       <Navbar />
@@ -50,16 +56,8 @@ const ManagePage = async ({ params }: ManagePageProps) => {
           </p>
         </div>
 
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center py-10">
-              <p className="text-sm text-muted-foreground">
-                Carregando gerenciamento...
-              </p>
-            </div>
-          }
-        >
-          <ProtectedManagement establishmentId={establishmentId} />
+        <Suspense fallback={<ManagementLoading />}>
+          <ProtectedManagement params={params} />
         </Suspense>
       </main>
 
@@ -68,6 +66,4 @@ const ManagePage = async ({ params }: ManagePageProps) => {
       </div>
     </div>
   );
-};
-
-export default ManagePage;
+}

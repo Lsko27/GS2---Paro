@@ -1,8 +1,8 @@
 import Image from "next/image";
 
 import HomeExplorer from "./_components/home-explorer";
-import Navbar from "../_components/navbar";
-import Footer from "../_components/footer";
+import Navbar from "@/app/_components/navbar";
+import Footer from "@/app/_components/footer";
 
 const HomePage = () => {
   return (

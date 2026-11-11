@@ -23,7 +23,7 @@ import { getCoordinatesByAddress } from "@/app/_services/geocoding-service";
 import {
   establishmentSchema,
   type EstablishmentFormData,
-} from "@/app/establishments/_schemas/establishment-schema";
+} from "@/app/(protected)/establishments/_schemas/establishment-schema";
 
 const addressFields = [
   { name: "zipCode", label: "CEP", placeholder: "00000-000" },

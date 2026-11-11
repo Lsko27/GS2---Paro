@@ -1,6 +1,7 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -51,6 +52,8 @@ export async function forwardBackendRequest(
 
     return result;
   } catch (error) {
+    unstable_rethrow(error);
+
     console.error("Erro na comunicação com o backend:", error);
 
     return NextResponse.json(

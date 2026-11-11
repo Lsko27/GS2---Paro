@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 
-import Footer from "../_components/footer";
-import Navbar from "../_components/navbar";
-import { requireAuthenticatedUser } from "../_services/server-auth-service";
 import ProfilePanel from "./_components/profile-panel";
+import Navbar from "@/app/_components/navbar";
+import { requireAuthenticatedUser } from "@/app/_services/server-auth-service";
+import Footer from "@/app/_components/footer";
 
 async function ProtectedProfile() {
   await requireAuthenticatedUser();

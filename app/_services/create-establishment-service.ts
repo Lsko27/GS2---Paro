@@ -1,4 +1,4 @@
-import type { EstablishmentFormData } from "@/app/establishments/_schemas/establishment-schema";
+import type { EstablishmentFormData } from "@/app/(protected)/establishments/_schemas/establishment-schema";
 
 type EstablishmentResponse = {
   id: number;

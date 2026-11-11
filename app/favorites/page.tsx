@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Footer from "@/app/_components/footer";
 import Navbar from "@/app/_components/navbar";
 import { useFavorites } from "@/app/_hooks/use-favorites";
-import EstablishmentCard from "@/app/explore/_components/establishment-card";
+import EstablishmentCard from "@/app/(protected)/explore/_components/establishment-card";
 
 type EstablishmentResponse = {
   id?: number;

@@ -1,5 +1,6 @@
 import { ArrowRight, Droplets, HeartHandshake, MapPin } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import Footer from "@/app/_components/footer";
 import Navbar from "@/app/_components/navbar";
@@ -11,22 +12,78 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
+import { unstable_rethrow } from "next/navigation";
+
+import getImpactSummary from "@/app/_services/impact-service";
 
 import ImpactStats from "./_components/impact-stats";
 import ResourceDistribution from "./_components/resource-distribution";
-import getImpactSummary from "../_services/impact-service";
 
-const ImpactPage = async () => {
+async function ImpactIndicators() {
   let summary = null;
-  let hasError = false;
 
   try {
     summary = await getImpactSummary();
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Erro ao carregar impacto:", error);
-    hasError = true;
   }
 
+  if (!summary) {
+    return (
+      <Card className="rounded-[18px] border border-neutral-200 p-4 shadow-none">
+        <CardContent className="space-y-2 p-0">
+          <p role="alert" className="text-sm font-medium">
+            Não foi possível carregar os indicadores.
+          </p>
+
+          <p className="text-xs text-neutral-600">
+            Verifique a conexão com o servidor e tente novamente mais tarde.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <ImpactStats summary={summary} />
+
+      <ResourceDistribution summary={summary} />
+
+      <p className="px-2 text-xs text-neutral-500">
+        Indicadores referentes aos estabelecimentos e recursos cadastrados na
+        plataforma.
+      </p>
+    </>
+  );
+}
+
+function ImpactIndicatorsLoading() {
+  return (
+    <div
+      role="status"
+      aria-label="Carregando indicadores de impacto"
+      className="space-y-4"
+    >
+      <div className="animate-pulse rounded-[18px] border border-neutral-200 p-5">
+        <div className="h-5 w-40 rounded-lg bg-neutral-200" />
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="h-24 rounded-xl bg-neutral-100" />
+          <div className="h-24 rounded-xl bg-neutral-100" />
+        </div>
+      </div>
+
+      <div className="animate-pulse rounded-[18px] border border-neutral-200 p-5">
+        <div className="h-5 w-48 rounded-lg bg-neutral-200" />
+        <div className="mt-5 h-36 rounded-xl bg-neutral-100" />
+      </div>
+    </div>
+  );
+}
+
+export default function ImpactPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white">
       <Navbar />
@@ -67,30 +124,9 @@ const ImpactPage = async () => {
           </Link>
         </section>
 
-        {hasError || !summary ? (
-          <Card className="rounded-[18px] border border-neutral-200 p-4 shadow-none">
-            <CardContent className="space-y-2 p-0">
-              <p role="alert" className="text-sm font-medium">
-                Não foi possível carregar os indicadores.
-              </p>
-
-              <p className="text-xs text-neutral-600">
-                Verifique a conexão com o servidor e tente novamente mais tarde.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <ImpactStats summary={summary} />
-
-            <ResourceDistribution summary={summary} />
-
-            <p className="px-2 text-xs text-neutral-500">
-              Indicadores referentes aos estabelecimentos e recursos cadastrados
-              na plataforma.
-            </p>
-          </>
-        )}
+        <Suspense fallback={<ImpactIndicatorsLoading />}>
+          <ImpactIndicators />
+        </Suspense>
 
         <Card className="gap-3 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none">
           <CardHeader className="p-0">
@@ -144,6 +180,4 @@ const ImpactPage = async () => {
       </div>
     </div>
   );
-};
-
-export default ImpactPage;
+}

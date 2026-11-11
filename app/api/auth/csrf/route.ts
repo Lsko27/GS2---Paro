@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -33,6 +34,8 @@ export async function GET(request: Request) {
 
     return result;
   } catch (error) {
+    unstable_rethrow(error);
+
     console.error("Erro ao obter token CSRF:", error);
 
     return NextResponse.json(

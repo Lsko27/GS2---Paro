@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { unstable_rethrow } from "next/navigation";
+import { connection, NextResponse } from "next/server";
 
 import { api } from "@/app/_lib/api";
 
@@ -9,6 +10,9 @@ type ResourceApiResponse = {
 };
 
 export async function GET() {
+  // Executa a consulta somente durante uma requisição real.
+  await connection();
+
   try {
     const resources = await api<ResourceApiResponse[]>("/recursos");
 
@@ -18,13 +22,25 @@ export async function GET() {
         name: resource.nome,
         description: resource.descricao,
       })),
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   } catch (error) {
-    console.error("Error fetching resources:", error);
+    unstable_rethrow(error);
+
+    console.error("Erro ao buscar recursos:", error);
 
     return NextResponse.json(
       { error: "Não foi possível carregar os recursos." },
-      { status: 502 },
+      {
+        status: 502,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   }
 }
