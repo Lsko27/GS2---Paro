@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -40,7 +39,6 @@ type LoginErrorResponse = {
 };
 
 const LoginPage = () => {
-  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<LoginFormData>({
@@ -119,7 +117,7 @@ const LoginPage = () => {
       }
 
       setAuthToast("login");
-      router.replace("/home");
+      window.location.replace("/home");
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : "Ocorreu um erro inesperado.",

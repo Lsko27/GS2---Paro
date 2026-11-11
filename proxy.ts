@@ -58,6 +58,7 @@ export const config = {
     "/explore/:path*",
     "/impact/:path*",
     "/profile/:path*",
+    "/favorites/:path*",
     "/establishments/new/:path*",
     "/establishments/:id/manage/:path*",
   ],
