@@ -126,13 +126,14 @@ const LoginPage = () => {
   };
 
   return (
-    <main>
-      <div className="relative flex h-[44svh] min-h-75 max-h-95 shrink-0 items-start justify-center overflow-hidden pt-8">
+    <main className="min-h-dvh bg-white lg:grid lg:grid-cols-2">
+      {/* Mobile Hero */}
+      <div className="relative flex h-[44svh] min-h-75 max-h-95 shrink-0 items-start justify-center overflow-hidden pt-8 lg:hidden">
         <Image
           src="/city.png"
           alt="Parô banner"
           fill
-          sizes="(max-width: 480px) 100vw, 480px"
+          sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover object-[center_82%]"
         />
 
@@ -145,16 +146,66 @@ const LoginPage = () => {
         />
       </div>
 
-      <section className="relative z-10 -mt-12 w-full flex-1 rounded-t-[40px] bg-white pt-10 pb-8">
-        <div className="mx-auto w-full max-w-120 px-5">
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-primary">Entrar</h1>
+      {/* Desktop Left Side */}
+      <section className="relative hidden min-h-dvh overflow-hidden lg:flex lg:flex-col lg:justify-between">
+        <Image
+          src="/city.png"
+          alt="Parô banner"
+          fill
+          sizes="50vw"
+          className="object-cover object-[center_70%]"
+          priority
+        />
 
-            <p className="pb-6 text-md">
-              Acesse sua conta para encontrar pontos de apoio perto de você.
+        <div className="absolute inset-0 bg-primary/70" />
+
+        <div className="relative z-10 flex flex-1 flex-col justify-between p-10 xl:p-14">
+          <div className="flex items-center gap-4">
+            <Image src="/logo.png" alt="Parô" width={64} height={82} />
+            <div>
+              <h1 className="text-3xl font-bold text-white">Parô</h1>
+              <p className="text-sm text-white/80">
+                Pontos de apoio para quem move a cidade
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-md">
+            <span className="mb-4 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+              Bem-vindo de volta
+            </span>
+
+            <h2 className="text-4xl font-bold leading-tight text-white">
+              Encontre apoio durante sua jornada de trabalho.
+            </h2>
+
+            <p className="mt-4 text-base leading-relaxed text-white/85">
+              Acesse sua conta para localizar estabelecimentos com água,
+              banheiro, descanso e outros recursos essenciais perto de você.
             </p>
+          </div>
 
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+          <p className="relative z-10 text-sm text-white/70">
+            Parô © 2026 — Conectando trabalhadores e estabelecimentos.
+          </p>
+        </div>
+      </section>
+
+      {/* Form Area */}
+      <section className="relative z-10 -mt-12 w-full flex-1 rounded-t-[40px] bg-white px-5 pt-10 pb-8 lg:mt-0 lg:flex lg:min-h-dvh lg:items-center lg:justify-center lg:rounded-none lg:px-8">
+        <div className="w-full max-w-120 lg:max-w-md">
+          <div className="space-y-3 lg:rounded-[28px] lg:border lg:border-neutral-200 lg:bg-white lg:p-8 lg:shadow-sm">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-primary lg:text-4xl">
+                Entrar
+              </h1>
+
+              <p className="text-md text-neutral-700">
+                Acesse sua conta para encontrar pontos de apoio perto de você.
+              </p>
+            </div>
+
+            <form onSubmit={form.handleSubmit(onSubmit)} className="pt-2">
               <FieldGroup>
                 <Controller
                   name="email"
@@ -170,6 +221,7 @@ const LoginPage = () => {
                         autoComplete="email"
                         aria-invalid={fieldState.invalid}
                         placeholder="Digite seu e-mail..."
+                        className="h-12 rounded-xl"
                       />
 
                       {fieldState.invalid && (
@@ -193,6 +245,7 @@ const LoginPage = () => {
                         autoComplete="current-password"
                         aria-invalid={fieldState.invalid}
                         placeholder="Digite sua senha..."
+                        className="h-12 rounded-xl"
                       />
 
                       {fieldState.invalid && (
@@ -225,7 +278,7 @@ const LoginPage = () => {
 
               <Link
                 href="/forgot-password"
-                className="mt-3 block w-fit font-semibold text-primary underline"
+                className="mt-4 block w-fit font-semibold text-primary underline"
               >
                 Esqueci minha senha
               </Link>
@@ -234,7 +287,7 @@ const LoginPage = () => {
                 <Button
                   type="submit"
                   disabled={form.formState.isSubmitting}
-                  className="rounded-full bg-paro-orange p-6 text-lg font-semibold"
+                  className="h-12 rounded-full bg-paro-orange text-lg font-semibold"
                 >
                   {form.formState.isSubmitting ? (
                     <>
@@ -251,7 +304,7 @@ const LoginPage = () => {
 
                 <Link
                   href="/register"
-                  className="mt-3 flex h-11 w-full items-center justify-center rounded-full border-2 border-primary text-lg font-semibold text-primary"
+                  className="flex h-12 w-full items-center justify-center rounded-full border-2 border-primary text-lg font-semibold text-primary"
                 >
                   Criar conta
                 </Link>
