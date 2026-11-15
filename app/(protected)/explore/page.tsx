@@ -220,17 +220,17 @@ const ExplorePage = () => {
     ? globalEstablishments
     : establishments;
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white lg:max-w-none lg:bg-neutral-50">
       <Navbar />
 
-      <main className="flex-1 px-3 pt-4 pb-24">
-        <div className="p-2">
-          <h1>
+      <main className="flex-1 px-3 pt-4 pb-24 lg:mx-auto lg:w-full lg:max-w-360 lg:px-8 lg:py-8">
+        <div className="p-2 lg:rounded-[28px] lg:border lg:border-neutral-200 lg:bg-white lg:p-8">
+          <h1 className="text-lg font-semibold text-primary lg:text-3xl lg:font-bold">
             {submittedSearch
               ? "Resultados da pesquisa"
               : "Pontos de apoio perto de você"}
           </h1>
-          <div className="mt-4">
+          <div className="mt-4 lg:max-w-2xl lg:mt-6">
             <SearchBar
               value={search}
               onChange={setSearch}
@@ -291,11 +291,25 @@ const ExplorePage = () => {
             </p>
           )}
 
-          <div className="mt-4 flex flex-col gap-4">
+          {/* Quantidade de resultados */}
+          {!(submittedSearch ? isSearching : isLoading) &&
+            !(submittedSearch ? searchError : error) && (
+              <p
+                role="status"
+                className="mt-5 px-1 text-sm font-medium text-neutral-700 lg:text-base"
+              >
+                {visibleEstablishments.length}{" "}
+                {visibleEstablishments.length === 1
+                  ? "ponto de apoio encontrado"
+                  : "pontos de apoio encontrados"}
+              </p>
+            )}
+
+          <div className="mt-6 flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-5 2xl:grid-cols-3">
             {(submittedSearch ? isSearching : isLoading) ? (
               <div
                 role="status"
-                className="flex flex-col items-center gap-3 py-16 text-center"
+                className="flex flex-col items-center gap-3 py-16 text-center lg:col-span-full"
               >
                 <Loader2 className="size-7 animate-spin text-primary" />
 
@@ -339,7 +353,7 @@ const ExplorePage = () => {
                 <Link
                   key={establishment.id}
                   href={`/establishments/${establishment.id}`}
-                  className="block"
+                  className="block h-full"
                 >
                   <EstablishmentCard
                     establishment={establishment}
@@ -357,7 +371,7 @@ const ExplorePage = () => {
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-120 border-t border-neutral-300 bg-white">
+      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-120 border-t border-neutral-300 bg-white lg:hidden">
         <Footer />
       </div>
     </div>

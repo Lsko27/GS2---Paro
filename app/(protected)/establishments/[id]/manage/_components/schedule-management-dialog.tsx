@@ -345,7 +345,7 @@ const ScheduleManagementDialog = ({
       </Card>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-[18px]">
+        <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-[18px] lg:max-w-xl">
           <DialogHeader>
             <DialogTitle>Configurar horários</DialogTitle>
 

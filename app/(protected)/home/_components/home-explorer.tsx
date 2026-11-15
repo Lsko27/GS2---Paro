@@ -332,70 +332,111 @@ const HomeExplorer = () => {
           : "");
 
   return (
-    <>
-      <SearchBar
-        value={search}
-        onChange={setSearch}
-        onSearch={handleSearch}
-        onUseMyLocation={handleUseMyLocation}
-        isLocating={isLocating}
-      />
+    <div className="lg:grid lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start lg:gap-6 xl:grid-cols-[400px_minmax(0,1fr)]">
+      {/* Painel de busca e filtros */}
+      <aside className="lg:rounded-[24px] lg:border lg:border-neutral-200 lg:bg-white lg:p-5 lg:shadow-sm">
+        <div className="hidden lg:block">
+          <h1 className="text-2xl font-bold text-primary">
+            Encontre pontos de apoio
+          </h1>
 
-      <div
-        role="group"
-        aria-label="Filtrar pontos de apoio"
-        className="mt-3 grid grid-cols-3 gap-x-3 gap-y-2 px-2"
-      >
-        {filters.map(({ value, label, Icon }) => (
-          <Button
-            key={value}
-            type="button"
-            variant="outline"
-            aria-pressed={selectedFilter === value}
-            disabled={resources === null}
-            onClick={() => setSelectedFilter(value)}
-            className="h-10 min-w-0 gap-1.5 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
-          >
-            <Icon className="size-4 shrink-0" aria-hidden="true" />
-            {label}
-          </Button>
-        ))}
-      </div>
-
-      <div className="mt-4 space-y-2 px-2">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Raio de busca</p>
-          <span className="text-xs text-muted-foreground">
-            {searchRadius} km
-          </span>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+            Localize estabelecimentos com recursos essenciais perto de você.
+          </p>
         </div>
 
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+          onSearch={handleSearch}
+          onUseMyLocation={handleUseMyLocation}
+          isLocating={isLocating}
+          className="lg:mx-0 lg:mt-5"
+        />
+
+        {/* Filtros por recurso */}
         <div
           role="group"
-          aria-label="Selecionar raio de busca"
-          className="grid grid-cols-5 gap-2"
+          aria-label="Filtrar pontos de apoio"
+          className="mt-3 grid grid-cols-3 gap-x-3 gap-y-2 px-2 lg:mt-6 lg:grid-cols-2 lg:gap-2 lg:px-0"
         >
-          {RADIUS_OPTIONS.map((radius) => (
+          {filters.map(({ value, label, Icon }) => (
             <Button
-              key={radius}
+              key={value}
               type="button"
               variant="outline"
-              aria-pressed={searchRadius === radius}
-              onClick={() => handleRadiusChange(radius)}
-              className="h-9 min-w-0 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
+              aria-pressed={selectedFilter === value}
+              disabled={resources === null}
+              onClick={() => setSelectedFilter(value)}
+              className="h-10 min-w-0 gap-1.5 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary lg:h-11 lg:text-sm"
             >
-              {radius} km
+              <Icon className="size-4 shrink-0" aria-hidden="true" />
+              {label}
             </Button>
           ))}
         </div>
-      </div>
 
+        {/* Raio de busca */}
+        <div className="mt-4 space-y-2 px-2 lg:mt-6 lg:px-0">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Raio de busca</p>
+
+            <span className="text-xs text-muted-foreground">
+              {searchRadius} km
+            </span>
+          </div>
+
+          <div
+            role="group"
+            aria-label="Selecionar raio de busca"
+            className="grid grid-cols-5 gap-2"
+          >
+            {RADIUS_OPTIONS.map((radius) => (
+              <Button
+                key={radius}
+                type="button"
+                variant="outline"
+                aria-pressed={searchRadius === radius}
+                onClick={() => handleRadiusChange(radius)}
+                className="h-9 min-w-0 rounded-full px-1 text-xs aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
+              >
+                {radius} km
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Resumo exclusivo do Desktop */}
+        <div className="mt-6 hidden border-t border-neutral-200 pt-5 lg:block">
+          <p className="text-sm font-semibold text-neutral-900">
+            Resultados da busca
+          </p>
+
+          <p className="mt-2 text-sm text-neutral-600">
+            {isLoading
+              ? "Buscando pontos de apoio..."
+              : error || isResourceUnavailable
+                ? "Resultados indisponíveis."
+                : `${points.length} ${
+                    points.length === 1
+                      ? "ponto encontrado"
+                      : "pontos encontrados"
+                  }`}
+          </p>
+
+          <p className="mt-2 text-xs text-neutral-500">
+            Os resultados respeitam os filtros e o raio de busca selecionados.
+          </p>
+        </div>
+      </aside>
+
+      {/* Mapa */}
       <section
         id="mapa"
         aria-label="Mapa de pontos de apoio"
-        className="relative isolate mt-4 h-82 scroll-mt-4 overflow-hidden rounded-[18px] border border-neutral-500 bg-neutral-950"
+        className="relative isolate mt-4 h-82 scroll-mt-4 overflow-hidden rounded-[18px] border border-neutral-500 bg-neutral-950 lg:mt-0 lg:h-155 lg:rounded-[24px]"
       >
-        <div className="absolute inset-2 overflow-hidden rounded-xl">
+        <div className="absolute inset-2 overflow-hidden rounded-xl lg:inset-3 lg:rounded-[18px]">
           <SupportMap
             view={INITIAL_MAP_VIEW}
             points={points}
@@ -407,15 +448,16 @@ const HomeExplorer = () => {
         </div>
       </section>
 
+      {/* Mensagens de carregamento e erro */}
       {statusMessage && (
         <p
           role={error || isResourceUnavailable ? "alert" : "status"}
-          className="mt-2 px-2 text-sm text-muted-foreground"
+          className="mt-2 px-2 text-sm text-muted-foreground lg:col-start-2 lg:px-0"
         >
           {statusMessage}
         </p>
       )}
-    </>
+    </div>
   );
 };
 

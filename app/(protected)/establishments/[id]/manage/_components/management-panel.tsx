@@ -1,8 +1,7 @@
 "use client";
 
-import { Store } from "lucide-react";
+import { ArrowUpRight, Store } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import {
   Card,
@@ -10,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
-import type { EstablishmentResource } from "@/app/_types/establishment-resources";
+
 import ResourceManagementForm from "./resource-management-form";
 import ScheduleManagementDialog from "./schedule-management-dialog";
 import AccessConditionsDialog from "./access-conditions-dialog";
@@ -21,80 +20,47 @@ type ManagementPanelProps = {
 };
 
 const ManagementPanel = ({ establishmentId }: ManagementPanelProps) => {
-  const [, setResources] = useState<EstablishmentResource[]>([]);
-  const [, setIsLoading] = useState(true);
-  const [, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadResources() {
-      try {
-        const response = await fetch(
-          `/api/establishments/${establishmentId}/resources`,
-          {
-            method: "GET",
-            cache: "no-store",
-            signal: controller.signal,
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Não foi possível carregar os recursos.");
-        }
-
-        const data = (await response.json()) as EstablishmentResource[];
-
-        if (!controller.signal.aborted) {
-          setResources(data);
-        }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setError(
-            error instanceof Error
-              ? error.message
-              : "Erro ao consultar recursos.",
-          );
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadResources();
-
-    return () => controller.abort();
-  }, [establishmentId]);
-
   return (
-    <div className="grid gap-3">
-      <Card className="gap-3 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Identificação e acesso à página pública */}
+      <Card className="gap-3 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none lg:rounded-[24px] lg:border-neutral-200 lg:p-6">
         <CardHeader className="p-0">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Store className="size-5 text-primary" />
-            Estabelecimento #{establishmentId}
+          <CardTitle className="flex items-center gap-3 text-base lg:text-xl">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary lg:size-12">
+              <Store className="size-5 lg:size-6" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block">Estabelecimento #{establishmentId}</span>
+              <span className="mt-1 hidden text-sm font-normal text-muted-foreground lg:block">
+                Gerencie as informações que aparecem para os trabalhadores.
+              </span>
+            </span>
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="p-0">
+        <CardContent className="p-0 lg:pl-[60px]">
           <Link
             href={`/establishments/${establishmentId}`}
-            className="text-sm font-medium text-primary underline"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline-offset-4 hover:underline"
           >
             Visualizar página pública
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </Link>
         </CardContent>
       </Card>
 
-      <ResourceManagementForm establishmentId={establishmentId} />
+      {/* Uma coluna no Mobile; duas áreas independentes no Desktop */}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.9fr)] lg:gap-6">
+        <div className="grid min-w-0 content-start gap-4 lg:gap-6">
+          <ResourceManagementForm establishmentId={establishmentId} />
+          <ScheduleManagementDialog establishmentId={establishmentId} />
+        </div>
 
-      <ScheduleManagementDialog establishmentId={establishmentId} />
-
-      <AccessConditionsDialog establishmentId={establishmentId} />
-
-      <EstablishmentEditDialog establishmentId={establishmentId} />
+        <div className="grid min-w-0 content-start gap-4 lg:gap-6">
+          <AccessConditionsDialog establishmentId={establishmentId} />
+          <EstablishmentEditDialog establishmentId={establishmentId} />
+        </div>
+      </div>
     </div>
   );
 };

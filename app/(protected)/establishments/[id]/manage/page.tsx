@@ -32,36 +32,45 @@ async function ProtectedManagement({ params }: ManagePageProps) {
 
 function ManagementLoading() {
   return (
-    <div role="status" className="flex items-center justify-center py-10">
-      <p className="text-sm text-muted-foreground">
-        Carregando gerenciamento...
-      </p>
+    <div
+      role="status"
+      aria-label="Carregando gerenciamento"
+      className="grid gap-4 lg:grid-cols-2"
+    >
+      <div className="h-28 animate-pulse rounded-3xl bg-neutral-200 lg:col-span-2" />
+      <div className="h-52 animate-pulse rounded-3xl bg-neutral-200" />
+      <div className="h-52 animate-pulse rounded-3xl bg-neutral-200" />
     </div>
   );
 }
 
 export default function ManagePage({ params }: ManagePageProps) {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white">
+    <div className="flex min-h-dvh w-full flex-col bg-white lg:bg-neutral-50">
       <Navbar />
 
-      <main className="flex-1 px-3 pt-4 pb-28">
-        <div className="mb-4 px-2">
-          <h1 className="text-lg font-semibold text-neutral-950">
+      <main className="mx-auto w-full max-w-120 flex-1 px-3 pt-4 pb-28 lg:max-w-7xl lg:px-8 lg:pt-10 lg:pb-12">
+        <header className="mb-5 px-2 lg:mb-8 lg:px-0">
+          <p className="hidden text-sm font-semibold uppercase tracking-wide text-primary/70 lg:block">
+            Painel de gestão
+          </p>
+
+          <h1 className="text-lg font-semibold text-neutral-950 lg:mt-2 lg:text-3xl lg:font-bold lg:text-primary">
             Gerenciar ponto de apoio
           </h1>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground lg:mt-2 lg:text-base">
             Configure os recursos e informações do seu estabelecimento.
           </p>
-        </div>
+        </header>
 
         <Suspense fallback={<ManagementLoading />}>
           <ProtectedManagement params={params} />
         </Suspense>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-120 border-t border-neutral-300 bg-white">
+      {/* Mantém a navegação inferior exclusivamente no Mobile */}
+      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-120 border-t border-neutral-300 bg-white lg:hidden">
         <Footer />
       </div>
     </div>
