@@ -228,7 +228,7 @@ export default function AccessConditionsDialog({
           if (!isSubmitting) setOpen(nextOpen);
         }}
       >
-        <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-[18px]">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-[18px] lg:max-w-xl">
           <DialogHeader>
             <DialogTitle>Condições de acesso</DialogTitle>
             <DialogDescription>

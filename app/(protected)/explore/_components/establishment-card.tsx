@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Armchair,
   CircleParking,
@@ -13,7 +12,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
 import OpeningStatusBadge from "@/app/_components/opening-status-badge";
 import { Button } from "@/app/_components/ui/button";
 import {
@@ -26,14 +24,12 @@ import { getOpeningStatus } from "@/app/_lib/opening-status";
 import type { EstablishmentSearchResult } from "@/app/_types/establishment";
 import type { OpeningHour } from "@/app/_types/establishment-details";
 import type { EstablishmentResource } from "@/app/_types/establishment-resources";
-
 type CardEstablishment = Pick<
   EstablishmentSearchResult,
   "id" | "name" | "street" | "number" | "neighborhood"
 > & {
   distanceKm?: number;
 };
-
 type EstablishmentCardProps = {
   establishment: CardEstablishment;
   imageUrl?: string | null;
@@ -41,7 +37,6 @@ type EstablishmentCardProps = {
   isFavoritePending?: boolean;
   onToggleFavorite: (establishmentId: number) => void;
 };
-
 type OpeningHourResponse = {
   id: number;
   estabelecimentoId: number;
@@ -50,13 +45,11 @@ type OpeningHourResponse = {
   horaFechamento: string | null;
   fechado: boolean;
 };
-
 type ReviewSummaryResponse = {
   estabelecimentoId: number;
   media: number | null;
   totalAvaliacoes: number;
 };
-
 function normalizeText(text: string) {
   return text
     .normalize("NFD")
@@ -64,7 +57,6 @@ function normalizeText(text: string) {
     .toLowerCase()
     .trim();
 }
-
 function getResourceIcon(name: string) {
   switch (normalizeText(name)) {
     case "agua potavel":
@@ -81,7 +73,6 @@ function getResourceIcon(name: string) {
       return Store;
   }
 }
-
 const EstablishmentCard = ({
   establishment,
   imageUrl,
@@ -90,25 +81,19 @@ const EstablishmentCard = ({
   onToggleFavorite,
 }: EstablishmentCardProps) => {
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
-
   const [reviewSummary, setReviewSummary] =
     useState<ReviewSummaryResponse | null>(null);
-
   const [isLoadingReviews, setIsLoadingReviews] = useState(true);
   const [reviewsError, setReviewsError] = useState(false);
-
   const [resources, setResources] = useState<EstablishmentResource[]>([]);
   const [isLoadingResources, setIsLoadingResources] = useState(true);
   const [resourcesError, setResourcesError] = useState(false);
-
   const [openingHours, setOpeningHours] = useState<OpeningHour[]>([]);
   const [isLoadingHours, setIsLoadingHours] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-
   // Carrega os recursos do estabelecimento.
   useEffect(() => {
     const controller = new AbortController();
-
     async function loadResources() {
       try {
         const response = await fetch(
@@ -119,20 +104,15 @@ const EstablishmentCard = ({
             signal: controller.signal,
           },
         );
-
         if (!response.ok) {
           throw new Error("Não foi possível carregar os recursos.");
         }
-
         const data = (await response.json()) as EstablishmentResource[];
-
         if (controller.signal.aborted) return;
-
         setResources(data.filter((resource) => resource.available));
         setResourcesError(false);
       } catch (error) {
         if (controller.signal.aborted) return;
-
         console.error("Erro ao carregar recursos:", error);
         setResourcesError(true);
       } finally {
@@ -141,16 +121,12 @@ const EstablishmentCard = ({
         }
       }
     }
-
     void loadResources();
-
     return () => controller.abort();
   }, [establishment.id]);
-
   // Carrega os horários cadastrados no Java.
   useEffect(() => {
     const controller = new AbortController();
-
     async function loadOpeningHours() {
       try {
         const response = await fetch(
@@ -161,15 +137,11 @@ const EstablishmentCard = ({
             signal: controller.signal,
           },
         );
-
         if (!response.ok) {
           throw new Error("Não foi possível carregar os horários.");
         }
-
         const data = (await response.json()) as OpeningHourResponse[];
-
         if (controller.signal.aborted) return;
-
         const mappedHours: OpeningHour[] = data.map((hour) => ({
           id: hour.id,
           establishmentId: hour.estabelecimentoId,
@@ -178,11 +150,9 @@ const EstablishmentCard = ({
           closingTime: hour.horaFechamento,
           closed: hour.fechado,
         }));
-
         setOpeningHours(mappedHours);
       } catch (error) {
         if (controller.signal.aborted) return;
-
         console.error("Erro ao carregar horários:", error);
         setOpeningHours([]);
       } finally {
@@ -191,33 +161,24 @@ const EstablishmentCard = ({
         }
       }
     }
-
     void loadOpeningHours();
-
     return () => controller.abort();
   }, [establishment.id]);
-
   // Atualiza o horário atual a cada minuto.
   useEffect(() => {
     const updateTime = () => {
       setCurrentTime(new Date());
     };
-
     updateTime();
-
     const interval = setInterval(updateTime, 60_000);
-
     return () => clearInterval(interval);
   }, []);
-
   useEffect(() => {
     const controller = new AbortController();
-
     async function loadReviewSummary() {
       setIsLoadingReviews(true);
       setReviewsError(false);
       setReviewSummary(null);
-
       try {
         const response = await fetch(
           `/api/establishments/${establishment.id}/reviews/summary`,
@@ -227,19 +188,14 @@ const EstablishmentCard = ({
             signal: controller.signal,
           },
         );
-
         if (!response.ok) {
           throw new Error("Não foi possível carregar as avaliações.");
         }
-
         const data = (await response.json()) as ReviewSummaryResponse;
-
         if (controller.signal.aborted) return;
-
         setReviewSummary(data);
       } catch (error) {
         if (controller.signal.aborted) return;
-
         console.error("Erro ao carregar avaliações:", error);
         setReviewsError(true);
       } finally {
@@ -248,18 +204,14 @@ const EstablishmentCard = ({
         }
       }
     }
-
     void loadReviewSummary();
-
     return () => controller.abort();
   }, [establishment.id]);
-
   // Reutiliza a regra de funcionamento já existente.
   const isOpen =
     isLoadingHours || currentTime === null
       ? null
       : getOpeningStatus(openingHours, currentTime);
-
   const address = [
     establishment.street,
     establishment.number,
@@ -267,19 +219,17 @@ const EstablishmentCard = ({
   ]
     .filter(Boolean)
     .join(", ");
-
   const showImage = Boolean(imageUrl && imageUrl !== failedImageUrl);
-
   return (
-    <Card className="rounded-md border border-neutral-300 bg-white p-2.5 shadow-none ring-0">
-      <CardContent className="flex items-center gap-3 p-0">
-        <div className="relative grid aspect-square w-[44%] shrink-0 place-items-center overflow-hidden rounded-2xl bg-muted">
+    <Card className="rounded-md border border-neutral-300 bg-white p-2.5 shadow-none ring-0 lg:rounded-2xl lg:p-3 lg:transition-shadow lg:hover:shadow-md 2xl:h-full">
+      <CardContent className="flex items-center gap-3 p-0 2xl:flex-1 2xl:flex-col 2xl:items-stretch">
+        <div className="relative grid aspect-square w-[44%] shrink-0 place-items-center overflow-hidden rounded-2xl bg-muted lg:w-44 2xl:aspect-video 2xl:w-full">
           {showImage && imageUrl ? (
             <Image
               src={imageUrl}
               alt={`Foto de ${establishment.name}`}
               fill
-              sizes="(max-width: 480px) 44vw, 190px"
+              sizes="(min-width: 1536px) 430px, (min-width: 1024px) 176px, (max-width: 480px) 44vw, 190px"
               className="object-cover"
               onError={() => setFailedImageUrl(imageUrl)}
             />
@@ -287,13 +237,11 @@ const EstablishmentCard = ({
             <Store className="size-9 text-slate-500" aria-hidden="true" />
           )}
         </div>
-
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 2xl:w-full">
           <CardHeader className="flex items-center justify-between gap-1 p-0">
             <CardTitle className="min-w-0 text-lg leading-tight font-semibold text-neutral-950">
               {establishment.name}
             </CardTitle>
-
             <Button
               type="button"
               variant="ghost"
@@ -308,7 +256,6 @@ const EstablishmentCard = ({
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-
                 onToggleFavorite(establishment.id);
               }}
               className="size-8 shrink-0 rounded-full text-slate-700"
@@ -321,7 +268,6 @@ const EstablishmentCard = ({
               />
             </Button>
           </CardHeader>
-
           {isLoadingReviews ? (
             <p className="text-xs text-neutral-500">Carregando avaliações...</p>
           ) : reviewsError ? (
@@ -339,11 +285,9 @@ const EstablishmentCard = ({
                 className="size-4 fill-amber-400 text-amber-400"
                 aria-hidden="true"
               />
-
               <span className="text-sm font-semibold text-neutral-900">
                 {reviewSummary.media.toFixed(1).replace(".", ",")}
               </span>
-
               <span className="text-xs text-neutral-500">
                 ({reviewSummary.totalAvaliacoes}{" "}
                 {reviewSummary.totalAvaliacoes === 1
@@ -355,68 +299,68 @@ const EstablishmentCard = ({
           ) : (
             <div className="flex items-center gap-1.5 text-neutral-500">
               <Star className="size-4" aria-hidden="true" />
-
               <span className="text-xs">Ainda não avaliado</span>
             </div>
           )}
-
           <p className="flex items-start gap-2 text-sm text-neutral-800">
             <MapPin
               className="mt-0.5 size-3.5 shrink-0 text-slate-700"
               aria-hidden="true"
             />
-
             <span className="min-w-0">{address}</span>
           </p>
-
           {typeof establishment.distanceKm === "number" && (
             <p className="text-xs font-medium text-teal-700">
               {establishment.distanceKm.toFixed(2)} km de distância
             </p>
           )}
+          <div className="2xl:mt-auto 2xl:pt-3">
+            <div className="mt-1">
+              <OpeningStatusBadge isOpen={isOpen} />
+            </div>
 
-          <div className="mt-1">
-            <OpeningStatusBadge isOpen={isOpen} />
+            <div className="mt-2 2xl:min-h-6">
+              {isLoadingResources ? (
+                <p className="text-xs text-neutral-500">
+                  Carregando recursos...
+                </p>
+              ) : resourcesError ? (
+                <p className="text-xs text-red-600">
+                  Recursos indisponíveis para consulta.
+                </p>
+              ) : resources.length > 0 ? (
+                <ul
+                  aria-label="Recursos disponíveis"
+                  className="flex flex-wrap gap-2"
+                >
+                  {resources.map((resource) => {
+                    const Icon = getResourceIcon(resource.name);
+                    return (
+                      <li
+                        key={resource.id}
+                        title={`${resource.name}${
+                          resource.free
+                            ? " — Gratuito"
+                            : " — Consulte as condições"
+                        }${resource.condition ? ` — ${resource.condition}` : ""}`}
+                        className="grid h-6 w-9 place-items-center rounded-full border border-neutral-300"
+                      >
+                        <Icon className="size-3.5" aria-hidden="true" />
+                        <span className="sr-only">{resource.name}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="text-xs text-neutral-500">
+                  Nenhum recurso disponível informado.
+                </p>
+              )}
+            </div>
           </div>
-
-          {isLoadingResources ? (
-            <p className="text-xs text-neutral-500">Carregando recursos...</p>
-          ) : resourcesError ? (
-            <p className="text-xs text-red-600">
-              Recursos indisponíveis para consulta.
-            </p>
-          ) : resources.length > 0 ? (
-            <ul
-              aria-label="Recursos disponíveis"
-              className="flex flex-wrap gap-2"
-            >
-              {resources.map((resource) => {
-                const Icon = getResourceIcon(resource.name);
-
-                return (
-                  <li
-                    key={resource.id}
-                    title={`${resource.name}${
-                      resource.free ? " — Gratuito" : " — Consulte as condições"
-                    }${resource.condition ? ` — ${resource.condition}` : ""}`}
-                    className="grid h-6 w-9 place-items-center rounded-full border border-neutral-300"
-                  >
-                    <Icon className="size-3.5" aria-hidden="true" />
-
-                    <span className="sr-only">{resource.name}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="text-xs text-neutral-500">
-              Nenhum recurso disponível informado.
-            </p>
-          )}
         </div>
       </CardContent>
     </Card>
   );
 };
-
 export default EstablishmentCard;

@@ -58,6 +58,14 @@ const addressFields = [
   { name: "state", label: "UF" },
 ] as const;
 
+const addressFieldClasses = {
+  street: "lg:col-span-4",
+  number: "lg:col-span-2",
+  neighborhood: "lg:col-span-4",
+  city: "lg:col-span-4",
+  state: "lg:col-span-2",
+};
+
 function formatCep(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
 
@@ -188,6 +196,7 @@ const EstablishmentEditDialog = ({
       shouldDirty: true,
       shouldValidate: true,
     });
+
     setValue("longitude", "", {
       shouldDirty: true,
       shouldValidate: true,
@@ -265,8 +274,6 @@ const EstablishmentEditDialog = ({
         state: getValues("state").trim(),
       };
 
-      // Não utiliza coordenadas de um endereço que mudou
-      // enquanto a API respondia.
       if (JSON.stringify(currentAddress) !== JSON.stringify(address)) {
         return;
       }
@@ -304,8 +311,6 @@ const EstablishmentEditDialog = ({
     setError(null);
 
     try {
-      // Consulta o valor mais recente das condições de acesso
-      // para não apagá-las durante a edição dos dados gerais.
       const currentResponse = await fetch(
         `/api/establishments/${establishmentId}`,
         {
@@ -384,9 +389,10 @@ const EstablishmentEditDialog = ({
 
   return (
     <>
-      <Card className="gap-4 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none ring-0">
+      {/* Card de informações */}
+      <Card className="gap-4 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none ring-0 lg:rounded-[24px] lg:border-neutral-200 lg:p-6">
         <CardHeader className="p-0">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
             <Building2 className="size-5 text-primary" />
             Dados do estabelecimento
           </CardTitle>
@@ -419,7 +425,7 @@ const EstablishmentEditDialog = ({
               <Button
                 type="button"
                 onClick={handleOpen}
-                className="h-11 w-full rounded-full bg-paro-orange text-white hover:bg-paro-orange/90"
+                className="h-11 w-full rounded-full bg-paro-orange font-semibold text-white hover:bg-paro-orange/90 lg:w-auto lg:px-6"
               >
                 <Pencil className="size-4" />
                 Editar estabelecimento
@@ -433,6 +439,7 @@ const EstablishmentEditDialog = ({
         </CardContent>
       </Card>
 
+      {/* Modal de edição */}
       <Dialog
         open={open}
         onOpenChange={(nextOpen) => {
@@ -441,9 +448,12 @@ const EstablishmentEditDialog = ({
           }
         }}
       >
-        <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-[18px]">
+        <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-[18px] lg:max-w-3xl lg:rounded-[24px] lg:p-6">
           <DialogHeader>
-            <DialogTitle>Editar estabelecimento</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-primary lg:text-2xl">
+              Editar estabelecimento
+            </DialogTitle>
+
             <DialogDescription>
               Atualize as informações do seu ponto de apoio.
             </DialogDescription>
@@ -451,156 +461,193 @@ const EstablishmentEditDialog = ({
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
+            className="space-y-6"
             noValidate
           >
-            <div className="grid gap-1.5">
-              <label htmlFor="edit-name" className="text-sm font-medium">
-                Nome *
-              </label>
+            {/* Informações gerais */}
+            <section className="space-y-4">
+              <h3 className="hidden border-b border-neutral-200 pb-2 text-base font-semibold text-neutral-950 lg:block">
+                Informações gerais
+              </h3>
 
-              <Input
-                id="edit-name"
-                {...register("name")}
-                aria-invalid={Boolean(errors.name)}
-              />
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="grid min-w-0 gap-1.5 lg:col-span-2">
+                  <label htmlFor="edit-name" className="text-sm font-medium">
+                    Nome *
+                  </label>
 
-              {errors.name && (
-                <p className="text-xs text-red-600">{errors.name.message}</p>
-              )}
-            </div>
-
-            <div className="grid gap-1.5">
-              <label htmlFor="edit-description" className="text-sm font-medium">
-                Descrição
-              </label>
-
-              <Textarea
-                id="edit-description"
-                rows={4}
-                {...register("description")}
-              />
-
-              {errors.description && (
-                <p className="text-xs text-red-600">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-1.5">
-              <label htmlFor="edit-image" className="text-sm font-medium">
-                URL da imagem
-              </label>
-
-              <Input
-                id="edit-image"
-                type="url"
-                placeholder="https://exemplo.com/imagem.jpg"
-                {...register("imageUrl")}
-              />
-
-              {errors.imageUrl && (
-                <p className="text-xs text-red-600">
-                  {errors.imageUrl.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-1.5">
-              <label htmlFor="edit-zipCode" className="text-sm font-medium">
-                CEP *
-              </label>
-
-              <Controller
-                name="zipCode"
-                control={control}
-                render={({ field }) => (
                   <Input
-                    {...field}
-                    id="edit-zipCode"
-                    inputMode="numeric"
-                    maxLength={9}
-                    placeholder="00000-000"
-                    onChange={(event) => {
-                      const value = formatCep(event.target.value);
-
-                      field.onChange(value);
-                      invalidateCoordinates();
-                    }}
-                    onBlur={() => {
-                      field.onBlur();
-                      void handleCepSearch();
-                    }}
+                    id="edit-name"
+                    {...register("name")}
+                    aria-invalid={Boolean(errors.name)}
+                    className="h-11 rounded-xl"
                   />
-                )}
-              />
 
-              {isSearchingCep && (
-                <p className="text-xs text-muted-foreground">
-                  Consultando CEP...
-                </p>
-              )}
+                  {errors.name && (
+                    <p className="text-xs text-red-600">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
 
-              {errors.zipCode && (
-                <p className="text-xs text-red-600">{errors.zipCode.message}</p>
-              )}
-            </div>
+                <div className="grid min-w-0 gap-1.5">
+                  <label
+                    htmlFor="edit-description"
+                    className="text-sm font-medium"
+                  >
+                    Descrição
+                  </label>
 
-            {addressFields.map(({ name, label }) => (
-              <Controller
-                key={name}
-                name={name}
-                control={control}
-                render={({ field }) => (
-                  <div className="grid gap-1.5">
-                    <label
-                      htmlFor={`edit-${name}`}
-                      className="text-sm font-medium"
-                    >
-                      {label} *
-                    </label>
+                  <Textarea
+                    id="edit-description"
+                    rows={4}
+                    {...register("description")}
+                    className="min-h-28 rounded-xl"
+                  />
 
-                    <Input
-                      {...field}
-                      id={`edit-${name}`}
-                      className="w-full"
-                      onChange={(event) => {
-                        field.onChange(event);
-                        invalidateCoordinates();
-                      }}
-                      aria-invalid={Boolean(errors[name])}
-                    />
+                  {errors.description && (
+                    <p className="text-xs text-red-600">
+                      {errors.description.message}
+                    </p>
+                  )}
+                </div>
 
-                    {errors[name] && (
-                      <p className="text-xs text-red-600">
-                        {errors[name]?.message}
-                      </p>
+                <div className="grid min-w-0 content-start gap-1.5">
+                  <label htmlFor="edit-image" className="text-sm font-medium">
+                    URL da imagem
+                  </label>
+
+                  <Input
+                    id="edit-image"
+                    type="url"
+                    placeholder="https://exemplo.com/imagem.jpg"
+                    {...register("imageUrl")}
+                    className="h-11 rounded-xl"
+                  />
+
+                  {errors.imageUrl && (
+                    <p className="text-xs text-red-600">
+                      {errors.imageUrl.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* Endereço */}
+            <section className="space-y-4">
+              <h3 className="hidden border-b border-neutral-200 pb-2 text-base font-semibold text-neutral-950 lg:block">
+                Endereço
+              </h3>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-6">
+                <div className="grid min-w-0 gap-1.5 lg:col-span-2">
+                  <label htmlFor="edit-zipCode" className="text-sm font-medium">
+                    CEP *
+                  </label>
+
+                  <Controller
+                    name="zipCode"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        id="edit-zipCode"
+                        inputMode="numeric"
+                        maxLength={9}
+                        placeholder="00000-000"
+                        className="h-11 rounded-xl"
+                        aria-invalid={Boolean(errors.zipCode)}
+                        onChange={(event) => {
+                          const value = formatCep(event.target.value);
+
+                          field.onChange(value);
+                          invalidateCoordinates();
+                        }}
+                        onBlur={() => {
+                          field.onBlur();
+                          void handleCepSearch();
+                        }}
+                      />
                     )}
-                  </div>
-                )}
-              />
-            ))}
+                  />
 
-            <div className="space-y-3 rounded-xl border border-neutral-200 p-3">
-              <p className="text-sm font-semibold">Coordenadas</p>
+                  {isSearchingCep && (
+                    <p className="text-xs text-muted-foreground">
+                      Consultando CEP...
+                    </p>
+                  )}
 
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isGeocoding || isSearchingCep || isSubmitting}
-                onClick={() => void handleGeocoding()}
-                className="w-full rounded-full"
-              >
-                {isGeocoding ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <LocateFixed className="size-4" />
-                )}
-                Localizar endereço
-              </Button>
+                  {errors.zipCode && (
+                    <p className="text-xs text-red-600">
+                      {errors.zipCode.message}
+                    </p>
+                  )}
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                {addressFields.map(({ name, label }) => (
+                  <Controller
+                    key={name}
+                    name={name}
+                    control={control}
+                    render={({ field }) => (
+                      <div
+                        className={`grid min-w-0 gap-1.5 ${addressFieldClasses[name]}`}
+                      >
+                        <label
+                          htmlFor={`edit-${name}`}
+                          className="text-sm font-medium"
+                        >
+                          {label} *
+                        </label>
+
+                        <Input
+                          {...field}
+                          id={`edit-${name}`}
+                          className="h-11 w-full rounded-xl"
+                          onChange={(event) => {
+                            field.onChange(event);
+                            invalidateCoordinates();
+                          }}
+                          aria-invalid={Boolean(errors[name])}
+                        />
+
+                        {errors[name] && (
+                          <p className="text-xs text-red-600">
+                            {errors[name]?.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {/* Coordenadas */}
+            <section className="space-y-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3 lg:p-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <h3 className="text-sm font-semibold text-neutral-950 lg:text-base">
+                  Coordenadas
+                </h3>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isGeocoding || isSearchingCep || isSubmitting}
+                  onClick={() => void handleGeocoding()}
+                  className="w-full rounded-full lg:w-auto lg:px-5"
+                >
+                  {isGeocoding ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <LocateFixed className="size-4" />
+                  )}
+                  Localizar endereço
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 lg:gap-4">
                 <div className="grid min-w-0 gap-1.5">
                   <label
                     htmlFor="edit-latitude"
@@ -613,6 +660,8 @@ const EstablishmentEditDialog = ({
                     id="edit-latitude"
                     inputMode="decimal"
                     {...register("latitude")}
+                    className="h-11 rounded-xl bg-white"
+                    aria-invalid={Boolean(errors.latitude)}
                   />
 
                   {errors.latitude && (
@@ -634,6 +683,8 @@ const EstablishmentEditDialog = ({
                     id="edit-longitude"
                     inputMode="decimal"
                     {...register("longitude")}
+                    className="h-11 rounded-xl bg-white"
+                    aria-invalid={Boolean(errors.longitude)}
                   />
 
                   {errors.longitude && (
@@ -648,7 +699,7 @@ const EstablishmentEditDialog = ({
                 Se alterar o endereço, localize novamente as coordenadas antes
                 de salvar.
               </p>
-            </div>
+            </section>
 
             {error && (
               <p role="alert" className="text-xs text-red-600">
@@ -656,13 +707,13 @@ const EstablishmentEditDialog = ({
               </p>
             )}
 
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 lg:gap-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setOpen(false)}
-                className="rounded-full"
+                className="rounded-full lg:px-6"
               >
                 Cancelar
               </Button>
@@ -670,7 +721,7 @@ const EstablishmentEditDialog = ({
               <Button
                 type="submit"
                 disabled={isSubmitting || isGeocoding || isSearchingCep}
-                className="rounded-full bg-paro-orange text-white hover:bg-paro-orange/90"
+                className="rounded-full bg-paro-orange font-semibold text-white hover:bg-paro-orange/90 lg:px-6"
               >
                 {isSubmitting ? (
                   <>

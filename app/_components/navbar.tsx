@@ -7,7 +7,6 @@ import {
   Loader2,
   LogOut,
   MapPin,
-  Map,
   PlusCircle,
   ChevronDown,
   Menu,
@@ -38,7 +37,7 @@ type OwnedEstablishment = {
 };
 const navigationItems = [
   { href: "/home", label: "Início", Icon: House },
-  { href: "/explore", label: "Explorar", Icon: Map },
+  { href: "/explore", label: "Explorar", Icon: MapPin },
   {
     href: "/impact",
     label: "Impacto",
