@@ -26,12 +26,42 @@ import {
 } from "@/app/(protected)/establishments/_schemas/establishment-schema";
 
 const addressFields = [
-  { name: "zipCode", label: "CEP", placeholder: "00000-000" },
-  { name: "street", label: "Logradouro", placeholder: "Avenida Paulista" },
-  { name: "number", label: "Número", placeholder: "1000" },
-  { name: "neighborhood", label: "Bairro", placeholder: "Bela Vista" },
-  { name: "city", label: "Cidade", placeholder: "São Paulo" },
-  { name: "state", label: "UF", placeholder: "SP" },
+  {
+    name: "zipCode",
+    label: "CEP",
+    placeholder: "00000-000",
+    desktopClassName: "lg:col-span-2",
+  },
+  {
+    name: "street",
+    label: "Logradouro",
+    placeholder: "Avenida Paulista",
+    desktopClassName: "lg:col-span-4",
+  },
+  {
+    name: "number",
+    label: "Número",
+    placeholder: "1000",
+    desktopClassName: "lg:col-span-2",
+  },
+  {
+    name: "neighborhood",
+    label: "Bairro",
+    placeholder: "Bela Vista",
+    desktopClassName: "lg:col-span-4",
+  },
+  {
+    name: "city",
+    label: "Cidade",
+    placeholder: "São Paulo",
+    desktopClassName: "lg:col-span-4",
+  },
+  {
+    name: "state",
+    label: "UF",
+    placeholder: "SP",
+    desktopClassName: "lg:col-span-2",
+  },
 ] as const;
 
 type AddressFieldName = (typeof addressFields)[number]["name"];
@@ -227,9 +257,9 @@ const EstablishmentForm = () => {
   };
 
   return (
-    <Card className="gap-5 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none ring-0">
+    <Card className="gap-5 rounded-[18px] border border-neutral-300 bg-white p-4 shadow-none ring-0 lg:gap-7 lg:rounded-[24px] lg:border-neutral-200 lg:p-8 lg:shadow-sm">
       <CardHeader className="p-0">
-        <CardTitle className="text-lg font-semibold text-neutral-950">
+        <CardTitle className="text-lg font-semibold text-neutral-950 lg:text-xl">
           Dados do ponto de apoio
         </CardTitle>
       </CardHeader>
@@ -238,9 +268,9 @@ const EstablishmentForm = () => {
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="flex flex-col gap-6"
+          className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8"
         >
-          <section className="space-y-4">
+          <section className="min-w-0 space-y-4 lg:space-y-5">
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <Building2 className="size-5 text-primary" />
               Informações gerais
@@ -298,76 +328,81 @@ const EstablishmentForm = () => {
             </div>
           </section>
 
-          <section className="space-y-4">
+          <section className="min-w-0 space-y-4 lg:space-y-5">
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <MapPin className="size-5 text-primary" />
               Endereço
             </h2>
 
-            <div className="grid grid-cols-1 gap-3">
-              {addressFields.map(({ name, label, placeholder }) => (
-                <div key={name} className="grid w-full min-w-0 gap-1.5">
-                  <label htmlFor={name} className="text-xs font-medium">
-                    {label} *
-                  </label>
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-6 lg:gap-4">
+              {addressFields.map(
+                ({ name, label, placeholder, desktopClassName }) => (
+                  <div
+                    key={name}
+                    className={`grid w-full min-w-0 gap-1.5 ${desktopClassName}`}
+                  >
+                    <label htmlFor={name} className="text-xs font-medium">
+                      {label} *
+                    </label>
 
-                  <Controller
-                    name={name as AddressFieldName}
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <Input
-                        {...field}
-                        id={name}
-                        placeholder={placeholder}
-                        className="w-full"
-                        inputMode={name === "zipCode" ? "numeric" : undefined}
-                        maxLength={name === "zipCode" ? 9 : undefined}
-                        aria-invalid={
-                          fieldState.invalid ||
-                          (name === "zipCode" && Boolean(cepError))
-                        }
-                        onChange={(event) => {
-                          if (name === "zipCode") {
-                            field.onChange(
-                              handleZipCodeChange(event.target.value),
-                            );
-                          } else {
-                            field.onChange(event.target.value);
-                            invalidateCoordinates();
+                    <Controller
+                      name={name as AddressFieldName}
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <Input
+                          {...field}
+                          id={name}
+                          placeholder={placeholder}
+                          className="w-full"
+                          inputMode={name === "zipCode" ? "numeric" : undefined}
+                          maxLength={name === "zipCode" ? 9 : undefined}
+                          aria-invalid={
+                            fieldState.invalid ||
+                            (name === "zipCode" && Boolean(cepError))
                           }
-                        }}
-                        onBlur={() => {
-                          field.onBlur();
-                          if (name === "number") void handleGeocoding();
-                        }}
-                      />
-                    )}
-                  />
+                          onChange={(event) => {
+                            if (name === "zipCode") {
+                              field.onChange(
+                                handleZipCodeChange(event.target.value),
+                              );
+                            } else {
+                              field.onChange(event.target.value);
+                              invalidateCoordinates();
+                            }
+                          }}
+                          onBlur={() => {
+                            field.onBlur();
+                            if (name === "number") void handleGeocoding();
+                          }}
+                        />
+                      )}
+                    />
 
-                  {name === "zipCode" && isSearchingCep && (
-                    <p
-                      role="status"
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                    >
-                      <Loader2
-                        className="size-3 animate-spin"
-                        aria-hidden="true"
-                      />
-                      Consultando CEP...
-                    </p>
-                  )}
-                  {name === "zipCode" && cepError && (
-                    <p role="alert" className="text-xs text-red-600">
-                      {cepError}
-                    </p>
-                  )}
-                  {errors[name] && (
-                    <p className="text-xs text-red-600">
-                      {errors[name]?.message}
-                    </p>
-                  )}
-                </div>
-              ))}
+                    {name === "zipCode" && isSearchingCep && (
+                      <p
+                        role="status"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                      >
+                        <Loader2
+                          className="size-3 animate-spin"
+                          aria-hidden="true"
+                        />
+                        Consultando CEP...
+                      </p>
+                    )}
+                    {name === "zipCode" && cepError && (
+                      <p role="alert" className="text-xs text-red-600">
+                        {cepError}
+                      </p>
+                    )}
+                    {errors[name] && (
+                      <p className="text-xs text-red-600">
+                        {errors[name]?.message}
+                      </p>
+                    )}
+                  </div>
+                ),
+              )}
             </div>
 
             <p className="text-xs leading-relaxed text-muted-foreground">
@@ -376,7 +411,7 @@ const EstablishmentForm = () => {
             </p>
           </section>
 
-          <section className="space-y-4">
+          <section className="min-w-0 space-y-4 lg:space-y-5">
             <h2 className="text-sm font-semibold">
               Coordenadas do estabelecimento
             </h2>
@@ -390,7 +425,7 @@ const EstablishmentForm = () => {
               variant="outline"
               disabled={isGeocoding || isSearchingCep}
               onClick={() => void handleGeocoding()}
-              className="h-10 w-full rounded-full"
+              className="h-10 w-full rounded-full lg:w-auto lg:min-w-76"
             >
               {isGeocoding ? (
                 <>
@@ -437,7 +472,7 @@ const EstablishmentForm = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:max-w-3xl lg:gap-5">
               <div className="grid min-w-0 gap-1.5">
                 <label htmlFor="latitude" className="text-xs font-medium">
                   Latitude *
@@ -478,7 +513,7 @@ const EstablishmentForm = () => {
           </section>
 
           {serverError && (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="text-sm text-red-600 lg:col-span-2">
               {serverError}
             </p>
           )}
@@ -488,7 +523,7 @@ const EstablishmentForm = () => {
             disabled={
               isSubmitting || isSearchingCep || isGeocoding || Boolean(cepError)
             }
-            className="h-11 w-full rounded-full bg-paro-orange text-base font-semibold text-white hover:bg-paro-orange/90"
+            className="h-11 w-full rounded-full bg-paro-orange text-base font-semibold text-white hover:bg-paro-orange/90 lg:col-span-2 lg:h-12 lg:w-80 lg:justify-self-end"
           >
             {isSubmitting ? (
               <>
