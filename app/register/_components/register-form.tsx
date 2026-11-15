@@ -1,7 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CarTaxiFront, Loader2, Store } from "lucide-react";
+import {
+  CarTaxiFront,
+  Loader2,
+  Store,
+  Eye,
+  EyeOff,
+  Lock,
+  User,
+  Mail,
+  Phone,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -43,6 +53,9 @@ const tabClassName =
 
 const RegisterForm = () => {
   const router = useRouter();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -146,14 +159,22 @@ const RegisterForm = () => {
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>Nome completo</FieldLabel>
 
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="text"
-                  autoComplete="name"
-                  placeholder="Digite seu nome completo..."
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <User
+                    className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Digite seu nome completo..."
+                    aria-invalid={fieldState.invalid}
+                    className="h-12 rounded-xl pl-12"
+                  />
+                </div>
 
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -169,14 +190,22 @@ const RegisterForm = () => {
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
 
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Digite seu e-mail..."
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <Mail
+                    className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Digite seu e-mail..."
+                    aria-invalid={fieldState.invalid}
+                    className="h-12 rounded-xl pl-12"
+                  />
+                </div>
 
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -192,15 +221,23 @@ const RegisterForm = () => {
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>Telefone</FieldLabel>
 
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="(11) 99999-9999"
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <Phone
+                    className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="(11) 99999-9999"
+                    aria-invalid={fieldState.invalid}
+                    className="h-12 rounded-xl pl-12"
+                  />
+                </div>
 
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -216,14 +253,40 @@ const RegisterForm = () => {
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
 
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Crie uma senha..."
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <Lock
+                    className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Digite sua senha..."
+                    className="h-12 rounded-xl pr-12 pl-12"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={
+                      showPassword ? "Ocultar senha" : "Mostrar senha"
+                    }
+                    aria-pressed={showPassword}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute top-1/2 right-2 size-9 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-transparent hover:text-primary"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-5" aria-hidden="true" />
+                    ) : (
+                      <Eye className="size-5" aria-hidden="true" />
+                    )}
+                  </Button>
+                </div>
 
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -239,14 +302,42 @@ const RegisterForm = () => {
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>Confirmar senha</FieldLabel>
 
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Confirme sua senha..."
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <Lock
+                    className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Confirme sua senha..."
+                    aria-invalid={fieldState.invalid}
+                    className="h-12 rounded-xl pr-12 pl-12"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ocultar confirmação de senha"
+                        : "Mostrar confirmação de senha"
+                    }
+                    aria-pressed={showConfirmPassword}
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute top-1/2 right-2 size-9 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-transparent hover:text-primary"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-5" aria-hidden="true" />
+                    ) : (
+                      <Eye className="size-5" aria-hidden="true" />
+                    )}
+                  </Button>
+                </div>
 
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

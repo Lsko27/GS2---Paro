@@ -97,4 +97,10 @@
   html {
     @apply font-sans;
   }
+
+  /* Oculta o botão nativo de visualizar senha do Edge */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
 }

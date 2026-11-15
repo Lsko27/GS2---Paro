@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleAlert, Loader2 } from "lucide-react";
+import { CircleAlert, Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -40,6 +40,7 @@ type LoginErrorResponse = {
 
 const LoginPage = () => {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(formSchema),
@@ -214,15 +215,22 @@ const LoginPage = () => {
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
 
-                      <Input
-                        {...field}
-                        id={field.name}
-                        type="email"
-                        autoComplete="email"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="Digite seu e-mail..."
-                        className="h-12 rounded-xl"
-                      />
+                      <div className="relative">
+                        <Mail
+                          className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+
+                        <Input
+                          {...field}
+                          id={field.name}
+                          type="email"
+                          autoComplete="email"
+                          aria-invalid={fieldState.invalid}
+                          placeholder="Digite seu e-mail..."
+                          className="h-12 rounded-xl pl-12"
+                        />
+                      </div>
 
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -238,15 +246,40 @@ const LoginPage = () => {
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
 
-                      <Input
-                        {...field}
-                        id={field.name}
-                        type="password"
-                        autoComplete="current-password"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="Digite sua senha..."
-                        className="h-12 rounded-xl"
-                      />
+                      <div className="relative">
+                        <Lock
+                          className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+
+                        <Input
+                          {...field}
+                          id={field.name}
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                          aria-invalid={fieldState.invalid}
+                          placeholder="Digite sua senha..."
+                          className="h-12 rounded-xl pr-12 pl-12"
+                        />
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={
+                            showPassword ? "Ocultar senha" : "Mostrar senha"
+                          }
+                          aria-pressed={showPassword}
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="absolute top-1/2 right-2 size-9 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-transparent hover:text-primary"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="size-5" aria-hidden="true" />
+                          ) : (
+                            <Eye className="size-5" aria-hidden="true" />
+                          )}
+                        </Button>
+                      </div>
 
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
