@@ -30,7 +30,7 @@ export default function ProfilePage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-120 flex-col bg-white lg:max-w-none lg:bg-neutral-50">
       <Navbar />
 
-      <main className="flex-1 px-3 pt-4 pb-28 lg:mx-auto lg:w-full lg:max-w-[1440px] lg:px-8 lg:pt-10 lg:pb-12">
+      <main className="flex-1 px-3 pt-4 pb-28 lg:mx-auto lg:w-full lg:max-w-360 lg:px-8 lg:pt-10 lg:pb-12">
         <header className="px-2 lg:px-0">
           <h1 className="text-lg font-semibold text-neutral-950 lg:text-3xl lg:font-bold lg:text-primary">
             Meu perfil

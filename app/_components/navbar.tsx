@@ -17,7 +17,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { getAuthenticatedUser, logout } from "../_services/auth-service";
 import type { AuthenticatedUser } from "../_types/auth";
 import { setAuthToast } from "./auth-toast";
@@ -45,7 +45,7 @@ const navigationItems = [
   },
 ] as const;
 
-const Navbar = () => {
+const NavbarContent = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [menuAberto, setMenuAberto] = useState(false);
@@ -439,4 +439,20 @@ const Navbar = () => {
     </nav>
   );
 };
+
+const Navbar = () => {
+  return (
+    <Suspense
+      fallback={
+        <div
+          aria-hidden="true"
+          className="h-20 border-b-2 border-neutral-200 bg-white lg:h-18 lg:border-b"
+        />
+      }
+    >
+      <NavbarContent />
+    </Suspense>
+  );
+};
+
 export default Navbar;

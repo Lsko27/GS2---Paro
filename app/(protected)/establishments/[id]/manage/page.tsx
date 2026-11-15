@@ -44,7 +44,7 @@ function ManagementLoading() {
   );
 }
 
-export default function ManagePage({ params }: ManagePageProps) {
+const ManagePage = async ({ params }: ManagePageProps) => {
   return (
     <div className="flex min-h-dvh w-full flex-col bg-white lg:bg-neutral-50">
       <Navbar />
@@ -75,4 +75,6 @@ export default function ManagePage({ params }: ManagePageProps) {
       </div>
     </div>
   );
-}
+};
+
+export default ManagePage;
