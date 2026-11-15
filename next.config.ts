@@ -4,8 +4,12 @@ const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
   },
-  cacheComponents: true,
-  partialPrefetching: true,
+
+  // Evita a preservação de instâncias do Leaflet
+  // pelo React Activity durante a navegação.
+  cacheComponents: false,
+  partialPrefetching: false,
+
   images: {
     remotePatterns: [
       {
@@ -14,6 +18,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   turbopack: {
     rules: {
       "*.css": {
