@@ -162,9 +162,9 @@ async function EstablishmentContent({ params }: EstablishmentPageProps) {
 
 function EstablishmentLoading() {
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-120 animate-pulse bg-white lg:max-w-[1440px] lg:bg-neutral-50 lg:px-8 lg:pt-7">
+    <div className="mx-auto min-h-dvh w-full max-w-120 animate-pulse bg-white lg:max-w-360 lg:bg-neutral-50 lg:px-8 lg:pt-7">
       <div className="lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-6">
-        <div className="h-72 bg-neutral-200 lg:h-[400px] lg:rounded-3xl" />
+        <div className="h-72 bg-neutral-200 lg:h-100 lg:rounded-3xl" />
         <div className="relative -mt-6 rounded-t-[36px] bg-white px-5 pt-8 lg:mt-0 lg:rounded-3xl lg:border lg:border-neutral-200 lg:p-8">
           <div className="h-7 w-3/4 rounded-lg bg-neutral-200" />
           <div className="mt-6 h-5 w-1/2 rounded-lg bg-neutral-200" />
@@ -182,9 +182,21 @@ function EstablishmentLoading() {
 export default function EstablishmentPage({ params }: EstablishmentPageProps) {
   return (
     <>
+      {/* Navbar Desktop */}
       <div className="hidden lg:block">
-        <Navbar />
+        <Suspense
+          fallback={
+            <div
+              aria-hidden="true"
+              className="h-18 border-b border-neutral-200 bg-white"
+            />
+          }
+        >
+          <Navbar />
+        </Suspense>
       </div>
+
+      {/* Conteúdo do estabelecimento */}
       <Suspense fallback={<EstablishmentLoading />}>
         <EstablishmentContent params={params} />
       </Suspense>
